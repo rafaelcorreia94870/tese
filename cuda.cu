@@ -45,7 +45,7 @@ void map(Iterator& container, Func func) {
     //using T = typename std::iterator_traits<Iterator>::value_type; //saber o tipo do iterador
     using T = typename Iterator::value_type;
     std::vector<T> temp;  
-
+    
     // Copiar
     for (auto it = container.begin(); it != container.end(); ++it) {
         temp.push_back(*it);
@@ -72,6 +72,43 @@ void map(Iterator& container, Func func) {
 
     
     std::copy(temp.begin(), temp.end(), container.begin());
+}
+
+
+/*
+Podia ter sido feito com 
+if constexpr (std::is_same_v<Container, std::vector<T>>){
+}
+Que o constexpr compila só se a condição for verdadeira o copy
+*/
+//Template specialization para vector
+template <typename T, typename Func>
+void map(std::vector<T>& container, Func func) {
+    using T = typename Iterator::value_type;
+    std::vector<T> temp;  
+
+    size_t size = container.size(); 
+    T* d_array;
+    size_t bytes = size * sizeof(T);
+    
+    
+    cudaMalloc(&d_array, bytes);
+    cudaMemcpy(d_array, temp.data(), bytes, cudaMemcpyHostToDevice);
+
+    
+    int blockSize = 256;
+    int numBlocks = (size + blockSize - 1) / blockSize;
+    auto device_func = [=] __device__ (T x) { return func(x); };
+
+    mapKernel<<<numBlocks, blockSize>>>(d_array, size, device_func);
+
+    
+    cudaMemcpy(temp.data(), d_array, bytes, cudaMemcpyDeviceToHost);
+    cudaFree(d_array);
+
+    
+    std::copy(temp.begin(), temp.end(), container.begin());
+
 }
 
 ///////////////// FUNCOES PARA O MAP /////////////////
