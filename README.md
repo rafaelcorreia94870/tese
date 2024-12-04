@@ -7,7 +7,9 @@
 - [ ] Função por referência -> todos os argumentos
 - [ ] Coleção por referência
   - [ ] adicionar por referência no kernel
-  - [ ] aceitar vetor
+  - [X] aceitar vetor
   - [ ] aceitar array of structs
+- [ ] Separar o código em ficheiros
+- [ ] Fazer testes automaticos
 - [X] Pesquisar template specialization
 - [x] Fazer to do list

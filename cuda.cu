@@ -10,7 +10,7 @@
 /*
 Flags necessarias e como correro programa:
 
-nvcc --extended-lambda -o cuda_map cuda_map.cu
+nvcc --extended-lambda -o cuda_map cuda.cu
 .\cuda_map.exe    
 */  
 
@@ -25,8 +25,16 @@ __global__ void mapKernel(T* d_array, int size, Func func) {
     }
 }
 
+template <typename T, typename Func>
+struct FunctionWrapper {
+    Func func;
+
+    __device__ T operator()(T x) const {
+        return func(x);
+    }
+};
 template <typename Iterator, typename Func>
-void map(Iterator& container, Func func) {
+void map(Iterator& container, Func& func) {
     /*
     typename -> Necessario usar quando estamos a tratar de classes template
     std::iterator_traits<Iterator> -> extrair as traits do iterador
@@ -46,7 +54,6 @@ void map(Iterator& container, Func func) {
     using T = typename Iterator::value_type;
     std::vector<T> temp;  
     
-    // Copiar
     for (auto it = container.begin(); it != container.end(); ++it) {
         temp.push_back(*it);
     }
@@ -62,8 +69,8 @@ void map(Iterator& container, Func func) {
     
     int blockSize = 256;
     int numBlocks = (size + blockSize - 1) / blockSize;
-    auto device_func = [=] __device__ (T x) { return func(x); };
-
+    //__device__ auto device_func = [=] __device__ (T x) { return func(x); };
+    FunctionWrapper<T, Func> device_func{func};
     mapKernel<<<numBlocks, blockSize>>>(d_array, size, device_func);
 
     
@@ -83,9 +90,7 @@ Que o constexpr compila só se a condição for verdadeira o copy
 */
 //Template specialization para vector
 template <typename T, typename Func>
-void map(std::vector<T>& container, Func func) {
-    using T = typename Iterator::value_type;
-    std::vector<T> temp;  
+void map(std::vector<T>& container, Func& func) {
 
     size_t size = container.size(); 
     T* d_array;
@@ -93,22 +98,18 @@ void map(std::vector<T>& container, Func func) {
     
     
     cudaMalloc(&d_array, bytes);
-    cudaMemcpy(d_array, temp.data(), bytes, cudaMemcpyHostToDevice);
+    cudaMemcpy(d_array, container.data(), bytes, cudaMemcpyHostToDevice);
 
     
     int blockSize = 256;
     int numBlocks = (size + blockSize - 1) / blockSize;
-    auto device_func = [=] __device__ (T x) { return func(x); };
+    auto device_func = [=] __global__ __device__ (T x) { return func(x); };
 
     mapKernel<<<numBlocks, blockSize>>>(d_array, size, device_func);
 
     
-    cudaMemcpy(temp.data(), d_array, bytes, cudaMemcpyDeviceToHost);
+    cudaMemcpy(container.data(), d_array, bytes, cudaMemcpyDeviceToHost);
     cudaFree(d_array);
-
-    
-    std::copy(temp.begin(), temp.end(), container.begin());
-
 }
 
 ///////////////// FUNCOES PARA O MAP /////////////////
@@ -118,6 +119,17 @@ float square(float x) {
 
 int increment(int x) {
     return x + 1;
+}
+
+struct ThisIsAStruct {
+    int x;
+    int y;
+};
+
+ThisIsAStruct incrementStruct(ThisIsAStruct st, int inc) {
+    st.x += inc;
+    st.y += inc;
+    return st;
 }
 /////////////////////////////////////////////////////
 /////////// Functors for device functions ///////////
@@ -144,11 +156,14 @@ struct Transform_String {
 };
 /////////////////////////////////////////////////////
 
+
+
 int main() {
     std::vector<float> vec = {1.0f, 2.0f, 3.0f, 4.0f};
     std::vector<int> intvec = {0, 1, 2, 3};
     std::list<int> intlist = {0, 1, 2, 3};
     std::array<int, 4> intarray = {0, 1, 2, 3};
+    std::vector<ThisIsAStruct> myStruct = {{1, 2}, {3, 4}, {5, 6}};
 
     //KEY, VALUE collection//
     std::map<std::string, std::string>New_Map;
@@ -178,6 +193,8 @@ int main() {
     //map(New_Map, Transform_String());
     map(myDeque, Increment());
 
+   
+
     //Lambdas
     //map(vec.begin(),vec.end(), [] __device__ (float x) { return square(x); });
     //map(intvec.begin(),intvec.end(), [] __device__ (int x) { return increment(x); });
@@ -201,19 +218,25 @@ int main() {
     for(int v : intarray){
         std::cout << v << " ";
     }
-    
+
+    /*
     std::cout << "\nMap with strings \n" ;
     for(auto x: New_Map)
     {
         std::cout << x.first << "->" << 
         x.second <<std::endl;
     }
+    */
 
     std::cout << "\nDeque\n";
     for (auto it = myDeque.begin(); it != myDeque.end(); ++it) {
         std::cout << *it << " "; 
     }
-    std::cout << std::endl;
+
+    std::cout << "\nStruct Vector\n";
+    for (auto s : myStruct) {
+        std::cout << s.x << " " << s.y << " ;";
+    }
 
     std::cout << std::endl;
 
