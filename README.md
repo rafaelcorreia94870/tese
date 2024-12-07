@@ -14,6 +14,14 @@
 - [X] Pesquisar template specialization
 - [x] Fazer to do list
 - [ ] Ver Explicit template instantiation
+- [x] ver maneiras de retirar o __device__ e __host__ de funções
+- [ ] suportar compilacao independente
+- [ ] testar se [] é random iterator
+- [ ] ver se o map da com +threadId em vez de usar como um array normal
+- [ ] ver defenição de std::reverse
+- [ ] Estudar melhor iteradores
+- [ ] unzip de iteradores (ver)-> memory coalescing
+
 
 
 ## Notas
@@ -26,3 +34,5 @@ https://stackoverflow.com/questions/31705764/cuda-c-using-a-template-function-wh
 https://stackoverflow.com/questions/11578381/cuda-kernel-call-in-a-simple-sample
 
 https://stackoverflow.com/questions/67563443/how-can-i-put-function-with-different-parameters-into-map-in-c
+
+https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html?highlight=function%2520transform#constexpr-functions-and-function-templates
