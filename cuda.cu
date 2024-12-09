@@ -21,6 +21,7 @@ __global__ void mapKernel(T* d_array, int size, Func func) {
     //Verifica se o idx n e out of bounds 
     //TODO -> optimização de lançar outro kernel se o idx for maior que o tamanho em vez de ter o if statement
     if (idx < size) {
+        //func(d_array + idx);
         d_array[idx] = func(d_array[idx]);
     }
 }
@@ -70,8 +71,8 @@ void map(Iterator& container, Func& func) {
     int blockSize = 256;
     int numBlocks = (size + blockSize - 1) / blockSize;
     //__device__ auto device_func = [=] __device__ (T x) { return func(x); };
-    FunctionWrapper<T, Func> device_func{func};
-    mapKernel<<<numBlocks, blockSize>>>(d_array, size, device_func);
+    //FunctionWrapper<T, Func> device_func{func};
+    mapKernel<<<numBlocks, blockSize>>>(d_array, size, func);
 
     
     cudaMemcpy(temp.data(), d_array, bytes, cudaMemcpyDeviceToHost);
@@ -103,9 +104,9 @@ void map(std::vector<T>& container, Func& func) {
     
     int blockSize = 256;
     int numBlocks = (size + blockSize - 1) / blockSize;
-    auto device_func = [=] __global__ __device__ (T x) { return func(x); };
+    //auto device_func = [=] __global__ __device__ (T x) { return func(x); };
 
-    mapKernel<<<numBlocks, blockSize>>>(d_array, size, device_func);
+    mapKernel<<<numBlocks, blockSize>>>(d_array, size, func);
 
     
     cudaMemcpy(container.data(), d_array, bytes, cudaMemcpyDeviceToHost);

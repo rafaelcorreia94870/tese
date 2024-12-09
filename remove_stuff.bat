@@ -1,6 +1,6 @@
 @echo off
 :: Specify the target folder here, or use the current directory.
-set "folder=C:\5ano\tese"
+set "folder=%~dp0"
 
 :: Delete .exe, .exp, and .lib files
 del /f /q "%folder%\*.exe"
