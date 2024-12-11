@@ -40,3 +40,12 @@ https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html?highlight=funct
 https://github.com/kokkos
 
 ver kokkos, thrust e cub
+
+https://github.com/nvidia/cccl
+
+https://nvidia.github.io/cccl/thrust/api/function_group__transformations_1gabbda6380c902223d777cc72d3b1b9d1a.html
+
+
+transform.h:
+
+https://nvidia.github.io/cccl/thrust/api/program_listing_file_thrust_transform.h.html
