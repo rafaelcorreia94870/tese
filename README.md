@@ -19,7 +19,7 @@
 - [x] testar se [] é random iterator -> pelo que percebi é
 - [x] ver se o map da com +threadId em vez de usar como um array normal
 - [x] ver definição de std::reverse
-- [ ] Estudar melhor iteradores
+- [x] Estudar melhor iteradores
 - [ ] unzip de iteradores (ver)-> memory coalescing
 
 
@@ -49,3 +49,6 @@ https://nvidia.github.io/cccl/thrust/api/function_group__transformations_1gabbda
 transform.h:
 
 https://nvidia.github.io/cccl/thrust/api/program_listing_file_thrust_transform.h.html
+
+transform.inl (implementação a serio):
+https://github.com/ROCm/Thrust/blob/master/thrust/system/detail/generic/transform.inl
