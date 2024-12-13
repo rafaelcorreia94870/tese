@@ -10,7 +10,7 @@
   - [X] aceitar vetor
   - [ ] aceitar array of structs
 - [ ] Separar o código em ficheiros
-- [ ] Fazer testes automaticos
+- [X] Fazer testes automaticos -> mais ou menos
 - [X] Pesquisar template specialization
 - [x] Fazer to do list
 - [x] Ver Explicit template instantiation
