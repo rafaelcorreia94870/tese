@@ -32,3 +32,11 @@ C:\5ano\tese_main\tese\nao_funciona\wrapper.cu(9): error: identifier "increment"
 macro_wrapper.cu:
 
 Compila, mas não altera valores.
+
+warning_disable.cu:
+
+Compila, mas não altera valores.
+
+warning_disable_2.cu:
+
+Compila, mas não altera valores.
