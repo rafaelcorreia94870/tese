@@ -7,11 +7,11 @@ apply functions to each element
 - [x] Map (one input, one function) writes in place
 - [x] Map (one input, one function, one output)
 
-- [ ] Map (two inputs, one function) writes in place of the first input
+- [x] Map (two inputs, one function) writes in place in all inputs
 - [ ] Map (two inputs, one function, one output)
 
 generic of the above
-- [ ] ⏳ In progress ... ⏳ Map (many inputs, one function) writes in place of the first input
+- [x] Map (many inputs, one function) writes in place in all inputs
 - [ ] Map (many inputs, one function, one output)
 
 - [ ] ⏳ In progress ... ⏳ Map (one input, many functions) writes in place (fog)
