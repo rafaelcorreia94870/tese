@@ -7,8 +7,6 @@
 #include <cuda_runtime.h>
 
 
-
-
 template <typename T, typename Func>
 __global__ void mapKernel(T* d_array, int size, Func func) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -16,7 +14,6 @@ __global__ void mapKernel(T* d_array, int size, Func func) {
         d_array[idx] = func(d_array[idx]);
     }
 }
-
 
 struct IntensiveComputation {
     __device__ float operator()(float x) const {
@@ -27,17 +24,12 @@ struct IntensiveComputation {
     }
 };
 
-
-
-    float CpuIntensiveComputation(float x) {
-        for (int i = 0; i < 100; ++i) { 
-            x = sin(x) * cos(x) + log(x + 1.0f);
-        }
-        return x;
+float CpuIntensiveComputation(float x) {
+    for (int i = 0; i < 100; ++i) { 
+        x = sin(x) * cos(x) + log(x + 1.0f);
     }
-
-
-
+    return x;
+}
 
 template <typename Iterator, typename Func>
 void map_impl(Iterator& container, Func& func) {
@@ -90,15 +82,8 @@ void map_impl(Iterator& container, Func& func, Iterator& output) {
     
 }
 
-
-
-
 template <typename Iterator, typename Func>
 void map_clean(Iterator& container, Func& func) {
-    //std::cout << "map_clean\n";
-    //std::cout << "container size: " << container.size() << "\n";
-    //std::cout << "container type: " << typeid(container).name() << "\n";
-
     using T = typename Iterator::value_type;
     std::vector<T> temp; 
     if constexpr (!std::is_same_v<Iterator, std::vector<T>>){
@@ -130,7 +115,6 @@ void map(Args &&...args) {
         map_clean(args...);
     }
     else {
-        
         auto argsTuple = std::forward_as_tuple(args...);
 
         constexpr size_t numArgs = sizeof...(args);
@@ -138,7 +122,6 @@ void map(Args &&...args) {
 
         apply_map_clean_to_tuple(func, argsTuple);
     }
-
 }
 
 template <typename Container, typename Func>
@@ -153,13 +136,12 @@ void compareAndPrint(const std::string& name1, const Container1& container1,
                      const std::string& name2, const Container2& container2,
                      const std::string& operationName, double duration1, double duration2,
                      double tolerance = 1e-6) {
-    // Ensure containers have the same size
+
     if (container1.size() != container2.size()) {
         std::cout << "Error: Containers " << name1 << " and " << name2 << " have different sizes.\n";
         return;
     }
 
-    // Compare elements
     bool resultsMatch = true;
     auto iter1 = container1.begin();
     auto iter2 = container2.begin();
@@ -172,7 +154,6 @@ void compareAndPrint(const std::string& name1, const Container1& container1,
         }
     }
 
-    // Print results
     std::cout << operationName << " " << name1 << " Time: " << duration1 << " ms\n";
     std::cout << operationName << " " << name2 << " Time: " << duration2 << " ms\n";
     std::cout << operationName << " Results Match: " << (resultsMatch ? "Yes" : "No") << "\n\n";
@@ -191,17 +172,6 @@ int main() {
     std::vector<float> cudaVec_out(N);
     std::list<float> cudaVecList_out(N);
 
-/*
-    auto startCuda_out = std::chrono::high_resolution_clock::now();
-    map(cudaVec, IntensiveComputation(), cudaVec_out);
-    auto endCuda_out = std::chrono::high_resolution_clock::now();
-    auto cudaDuration_out = std::chrono::duration_cast<std::chrono::milliseconds>(endCuda_out - startCuda_out);
-
-    auto startCudaList_out = std::chrono::high_resolution_clock::now();
-    map(cudaVecList, IntensiveComputation(), cudaVecList_out);
-    auto endCudaList_out = std::chrono::high_resolution_clock::now();
-    auto cudaDurationList_out = std::chrono::duration_cast<std::chrono::milliseconds>(endCudaList_out - startCudaList_out);
-*/
     auto startCuda_solo = std::chrono::high_resolution_clock::now();
     map(cudaVec_solo, IntensiveComputation());
     auto endCuda_solo = std::chrono::high_resolution_clock::now();
@@ -212,13 +182,6 @@ int main() {
     auto endCuda = std::chrono::high_resolution_clock::now();
     auto cudaDuration = std::chrono::duration_cast<std::chrono::milliseconds>(endCuda - startCuda);
 
-/*
-    auto startCudaList = std::chrono::high_resolution_clock::now();
-    map(cudaVecList, IntensiveComputation());
-    auto endCudaList = std::chrono::high_resolution_clock::now();
-    auto cudaDurationList = std::chrono::duration_cast<std::chrono::milliseconds>(endCudaList - startCudaList);
-
-*/
     
     auto startCpu = std::chrono::high_resolution_clock::now();
     std::transform(cpuVec.begin(),cpuVec.end(),cpuVec.begin(), CpuIntensiveComputation);
@@ -233,13 +196,6 @@ int main() {
 
     compareAndPrint("cudaVecSolo", cudaVec_solo, "cpuVec", cpuVec, "Map", cudaDuration_solo.count(), cpuDuration.count());
 
-/*
-    // Compare cudaVecWithOutput and cpuVec
-    compareAndPrint("cudaVecWithOutput", cudaVec, "cpuVec", cpuVec, "Map", cudaDuration_out.count(), cpuDuration.count());
-
-    // Compare cudaVecListWithOutput and cpuVec
-    compareAndPrint("cudaVecListWithOutput", cudaVecList, "cpuVec", cpuVec, "Map List", cudaDurationList_out.count(), cpuDuration.count());
-*/
 
     return 0;
 }

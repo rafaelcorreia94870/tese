@@ -27,13 +27,12 @@ struct IntensiveComputation {
 
 
 
-    float CpuIntensiveComputation(float x) {
-        for (int i = 0; i < 100; ++i) { 
-            x = sin(x) * cos(x) + log(x + 1.0f);
-        }
-        return x;
+float CpuIntensiveComputation(float x) {
+    for (int i = 0; i < 100; ++i) { 
+        x = sin(x) * cos(x) + log(x + 1.0f);
     }
-
+    return x;
+}
 
 
 
@@ -123,13 +122,12 @@ void compareAndPrint(const std::string& name1, const Container1& container1,
                      const std::string& name2, const Container2& container2,
                      const std::string& operationName, double duration1, double duration2,
                      double tolerance = 1e-6) {
-    // Ensure containers have the same size
+
     if (container1.size() != container2.size()) {
         std::cout << "Error: Containers " << name1 << " and " << name2 << " have different sizes.\n";
         return;
     }
 
-    // Compare elements
     bool resultsMatch = true;
     auto iter1 = container1.begin();
     auto iter2 = container2.begin();
@@ -142,7 +140,6 @@ void compareAndPrint(const std::string& name1, const Container1& container1,
         }
     }
 
-    // Print results
     std::cout << operationName << " " << name1 << " Time: " << duration1 << " ms\n";
     std::cout << operationName << " " << name2 << " Time: " << duration2 << " ms\n";
     std::cout << operationName << " Results Match: " << (resultsMatch ? "Yes" : "No") << "\n\n";
