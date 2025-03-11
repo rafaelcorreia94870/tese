@@ -258,3 +258,76 @@ void mysaxpy(const size_t N) {
     compareAndPrint("cuda_saxpy_x", cuda_saxpy_x, "thrust_saxpy_x", thrust_saxpy_x, 
                     "Map (2 Inputs - In-Place with Params)", cuda_time_saxpy.count(), thrust_time_saxpy.count());
 }
+
+void simpleReduce(const size_t N) {
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> thrust_reduce(N, 1);
+
+    // CUDA reduction
+    std::vector<int> cuda_result_vector(1);
+    auto cuda_time_reduce = timeFunction([&]() {
+        cuda_result_vector[0] = reduce(cuda_reduce, Sum());
+    });
+
+    // Thrust reduction
+    thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
+    std::vector<int> thrust_result_vector(1);
+    auto thrust_time_reduce = timeFunction([&]() {
+        thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Sum());
+    });
+
+    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+
+    // Print results
+    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+}
+
+void ReduceMult(const size_t N) {
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> thrust_reduce(N, 1);
+
+    // CUDA reduction
+    std::vector<int> cuda_result_vector(1);
+    auto cuda_time_reduce = timeFunction([&]() {
+        cuda_result_vector[0] = reduce(cuda_reduce, Multiply());
+    });
+
+    // Thrust reduction
+    thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
+    std::vector<int> thrust_result_vector(1);
+    auto thrust_time_reduce = timeFunction([&]() {
+        thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Multiply());
+    });
+
+    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+
+    // Print results
+    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+}
+
+
+void ReduceMax(const size_t N) {
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> thrust_reduce(N, 1);
+
+    // CUDA reduction
+    std::vector<int> cuda_result_vector(1);
+    auto cuda_time_reduce = timeFunction([&]() {
+        cuda_result_vector[0] = reduce(cuda_reduce, Max());
+    });
+
+    // Thrust reduction
+    thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
+    std::vector<int> thrust_result_vector(1);
+    auto thrust_time_reduce = timeFunction([&]() {
+        thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Max());
+    });
+
+    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+
+    // Print results
+    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+}

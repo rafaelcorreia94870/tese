@@ -42,3 +42,21 @@ struct IntensiveComputation2Inputs {
         return flag ? (x * y * a + b) : ((x + y) / a - b);
     }
 };
+
+struct Sum {
+    __device__ float operator()(float x, float y) const {
+        return x + y;
+    }
+};
+
+struct Max {
+    __device__ float operator()(float x, float y) const {
+        return x > y ? x : y;
+    }
+};
+
+struct Multiply {
+    __device__ float operator()(float x, float y) const {
+        return x * y;
+    }
+};
