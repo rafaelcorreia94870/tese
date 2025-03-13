@@ -8,6 +8,7 @@ concept VectorLike = requires(T a, size_t i) {
     { a.end() };
     { a.data() };
     { a[i] };
+    //typename T::value_type;
 } && std::ranges::range<T>;
 
 #endif

@@ -3,23 +3,21 @@
 
 
 #include <cstdio>
-
-
+//ver https://nvidia.github.io/cccl/cub/api/enum_namespacecub_1add0251c713859b8974806079e498d10a.html
+//https://github.com/dmlc/cub/blob/master/cub/device/device_reduce.cuh
 
 template <typename T, typename BinaryOp, typename... Args>
-__global__ void partialReduceKernel(T* d_in, T* d_out, int N, BinaryOp op, Args... args) {
+__global__ void partialReduceKernel(T* d_in, T* d_out, int N, T identity, BinaryOp op, Args... args) {
     extern __shared__ T sdata[];
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x * 2 + tid;
 
-
-    T localValue = (i < N) ? d_in[i] : T();
+    T localValue = (i < N) ? d_in[i] : identity;
     if (i + blockDim.x < N) {
         localValue = op(localValue, d_in[i + blockDim.x], args...);
     }
     sdata[tid] = localValue;
     __syncthreads();
-
 
     for (int s = blockDim.x / 2; s > 0; s >>= 1) {
         if (tid < s && tid + s < blockDim.x) {
@@ -34,23 +32,22 @@ __global__ void partialReduceKernel(T* d_in, T* d_out, int N, BinaryOp op, Args.
 }
 
 template <typename T, typename BinaryOp, typename... Args>
-void reduce_kernel(T* d_in, T* d_out, int N, BinaryOp op, Args... args) {
+void reduce_kernel(T* d_in, T* d_out, int N, T identity,BinaryOp op, Args... args) {
     int threadsPerBlock = 1024;
     int blocksPerGrid = (N + threadsPerBlock * 2 - 1) / (threadsPerBlock * 2);
 
     while (blocksPerGrid > 1) {
-        partialReduceKernel<<<blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(T)>>>(d_in, d_out, N, op, args...);
+        partialReduceKernel<<<blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(T)>>>(d_in, d_out, N, identity, op, args...);
         N = blocksPerGrid;
         d_in = d_out;
         blocksPerGrid = (N + threadsPerBlock * 2 - 1) / (threadsPerBlock * 2);
     }
 
-    // Last reduction step to get d_out[0]
-    partialReduceKernel<<<1, threadsPerBlock, threadsPerBlock * sizeof(T)>>>(d_in, d_out, N, op, args...);
+    partialReduceKernel<<<1, threadsPerBlock, threadsPerBlock * sizeof(T)>>>(d_in, d_out, N, identity, op, args...);
 }
 
-template <typename T, typename BinaryOp, typename... Args>
-T reduce(const std::vector<T>& h_in, BinaryOp op, Args... args) {
+template <VectorLike Collection, typename T, typename BinaryOp, typename... Args>
+T reduce_impl(const Collection & h_in, T identity, BinaryOp op, Args... args) {
     int N = h_in.size();
     if (N == 0) return 0;
 
@@ -59,7 +56,7 @@ T reduce(const std::vector<T>& h_in, BinaryOp op, Args... args) {
     cudaMalloc(&d_out, N * sizeof(T));
     cudaMemcpy(d_in, h_in.data(), N * sizeof(T), cudaMemcpyHostToDevice);
 
-    reduce_kernel(d_in, d_out, N, op, args...);
+    reduce_kernel(d_in, d_out, N, identity, op, args...);
 
     T result;
     cudaMemcpy(&result, d_out, sizeof(T), cudaMemcpyDeviceToHost);
@@ -68,4 +65,15 @@ T reduce(const std::vector<T>& h_in, BinaryOp op, Args... args) {
     cudaFree(d_out);
 
     return result;
+}
+
+template <VectorLike Collection, typename T, typename BinaryOp, typename... Args>
+auto reduce(const Collection h_in, T identity, BinaryOp op, Args... args) {
+    return reduce_impl<Collection, T>(h_in, identity,op, args...);
+}
+
+template <VectorLike Collection, typename T, typename BinaryOp, typename... Args>
+auto reduce(const Collection h_in, Collection h_out, T identity,BinaryOp op, Args... args) {
+    h_out = reduce_impl<Collection, T>(h_in, identity, op, args...);
+    return h_out;
 }

@@ -2,8 +2,8 @@
 
 
 void benchmark(const size_t N) {
-    oneInputInPlace(N);
     /*
+    oneInputInPlace(N);
     oneInputOutput(N);
     twoInputsInPlace(N);
     twoInputsOutput(N);
@@ -24,7 +24,7 @@ void benchmark(const size_t N) {
 }
 
 int main() {
-    const size_t N = 10000;
+    const size_t N = 1'000'000'000;
     benchmark(N);
     return 0;
 }
