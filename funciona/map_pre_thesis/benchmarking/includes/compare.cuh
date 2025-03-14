@@ -10,14 +10,16 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include "types/two_times_struct.h"
 
 
-void oneInputInPlace(const size_t N) {
+two_times_struct oneInputInPlace(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
     // CUDA map without parameters (single input, modifies in-place)
 
     std::vector<float> cuda_1in_inplace(N, 2.0f);
 
-    auto cuda_time_1in_inplace = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_1in_inplace, IntensiveComputation() );
     });
 
@@ -25,22 +27,27 @@ void oneInputInPlace(const size_t N) {
 
     std::vector<float> thrust_1in_inplace(N, 2.0f);
 
-    auto thrust_time_1in_inplace = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec = thrust_1in_inplace;
         thrust::transform(d_vec.begin(), d_vec.end(), d_vec.begin(),
                           IntensiveComputation());
         thrust::copy(d_vec.begin(), d_vec.end(), thrust_1in_inplace.begin());
     });
 
-    compareAndPrint("cuda_1in_inplace", cuda_1in_inplace, "thrust_1in_inplace", thrust_1in_inplace, "Map (1 Input - In-Place)", cuda_time_1in_inplace.count(), thrust_time_1in_inplace.count());
+    if(enable_prints){
+        compareAndPrint("cuda_1in_inplace", cuda_1in_inplace, "thrust_1in_inplace", thrust_1in_inplace, "Map (1 Input - In-Place)", times.cuda_time.count(), times.cuda_time.count());
+    }
+    return times;
 }
 
-void oneInputInPlaceParameters(const size_t N){ 
+two_times_struct oneInputInPlaceParameters(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (single input, modifies in-place)
 
     std::vector<float> cuda_1in_inplace_params(N, 2.0f);
 
-    auto cuda_time_1in_inplace_params = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_1in_inplace_params, IntensiveComputationParams(), 5, 2.3, true);
     });
 
@@ -48,22 +55,28 @@ void oneInputInPlaceParameters(const size_t N){
 
     std::vector<float> thrust_1in_inplace_params(N, 2.0f);
 
-    auto thrust_time_1in_inplace_params = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec = thrust_1in_inplace_params;
         thrust::transform(d_vec.begin(), d_vec.end(), d_vec.begin(),
                           IntensiveComputationParams());
         thrust::copy(d_vec.begin(), d_vec.end(), thrust_1in_inplace_params.begin());
     });
 
-    compareAndPrint("cuda_1in_inplace_params", cuda_1in_inplace_params, "thrust_1in_inplace_params", thrust_1in_inplace_params, "Map (1 Input - In-Place with Params)", cuda_time_1in_inplace_params.count(), thrust_time_1in_inplace_params.count());
+    if(enable_prints){
+        compareAndPrint("cuda_1in_inplace_params", cuda_1in_inplace_params, "thrust_1in_inplace_params", thrust_1in_inplace_params, "Map (1 Input - In-Place with Params)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void oneInputOutput(const size_t N) {
+two_times_struct oneInputOutput(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
     // CUDA map without parameters (single input, single output)
 
     std::vector<float> cuda_1in_output(N, 2.0f), cudaOutput_1in_output(N);
 
-    auto cuda_time_1in_output = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_1in_output, IntensiveComputation(), cudaOutput_1in_output);
     });
 
@@ -72,7 +85,7 @@ void oneInputOutput(const size_t N) {
     std::vector<float> thrust_1in_output(N, 2.0f);
     std::vector<float> thrustOut_1in_output(N);
 
-    auto thrust_time_1in_output = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec = thrust_1in_output;
         thrust::device_vector<float> d_out(thrustOut_1in_output.size());
         thrust::transform(d_vec.begin(), d_vec.end(), d_out.begin(),
@@ -80,15 +93,21 @@ void oneInputOutput(const size_t N) {
         thrust::copy(d_out.begin(), d_out.end(), thrustOut_1in_output.begin());
     });
 
-    compareAndPrint("cudaOutput_1in_output", cudaOutput_1in_output, "thrust_1in_output", thrustOut_1in_output, "Map (1 Input - Output)", cuda_time_1in_output.count(), thrust_time_1in_output.count());
+    if(enable_prints){
+        compareAndPrint("cudaOutput_1in_output", cudaOutput_1in_output, "thrust_1in_output", thrustOut_1in_output, "Map (1 Input - Output)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void oneInputOutputParameters(const size_t N) { 
+two_times_struct oneInputOutputParameters(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
     // CUDA map without parameters (single input, single output)
 
     std::vector<float> cuda_1in_output_params(N, 2.0f), cudaOutput_1in_output_params(N);
 
-    auto cuda_time_1in_output_params = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_1in_output_params, IntensiveComputationParams(), cudaOutput_1in_output_params, 5, 2.3, true);
     });
 
@@ -97,7 +116,7 @@ void oneInputOutputParameters(const size_t N) {
     std::vector<float> thrust_1in_output_params(N, 2.0f);
     std::vector<float> thrustOut_1in_output_params(N);
 
-    auto thrust_time_1in_output_params = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec = thrust_1in_output_params;
         thrust::device_vector<float> d_out(thrustOut_1in_output_params.size());
         thrust::transform(d_vec.begin(), d_vec.end(), d_out.begin(),
@@ -105,15 +124,21 @@ void oneInputOutputParameters(const size_t N) {
         thrust::copy(d_out.begin(), d_out.end(), thrustOut_1in_output_params.begin());
     });
 
-    compareAndPrint("cudaOutput_1in_output_params", cudaOutput_1in_output_params, "thrust_1in_output_params", thrustOut_1in_output_params, "Map (1 Input - Output with Params)", cuda_time_1in_output_params.count(), thrust_time_1in_output_params.count());
+    if(enable_prints){
+        compareAndPrint("cudaOutput_1in_output_params", cudaOutput_1in_output_params, "thrust_1in_output_params", thrustOut_1in_output_params, "Map (1 Input - Output with Params)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
     
-void twoInputsInPlace(const size_t N){
+two_times_struct twoInputsInPlace(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (two inputs, modifies in-place)
 
     std::vector<float> cuda_2in_inplace1(N, 2.0f), cuda_2in_inplace2(N, 2.0f);
 
-    auto cuda_time_2in_inplace = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_2in_inplace1, cuda_2in_inplace2, IntensiveComputation2Inputs());
     });
 
@@ -121,7 +146,7 @@ void twoInputsInPlace(const size_t N){
 
     std::vector<float> thrust_2in_inplace1(N, 2.0f), thrust_2in_inplace2(N, 2.0f);
 
-    auto thrust_time_2in_inplace = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec1 = thrust_2in_inplace1;
         thrust::device_vector<float> d_vec2 = thrust_2in_inplace2;
         thrust::transform(d_vec1.begin(), d_vec1.end(), d_vec2.begin(), d_vec1.begin(),
@@ -129,15 +154,21 @@ void twoInputsInPlace(const size_t N){
         thrust::copy(d_vec1.begin(), d_vec1.end(), thrust_2in_inplace1.begin());
     });
 
-    compareAndPrint("cuda_2in_inplace1", cuda_2in_inplace1, "thrust_2in_inplace1", thrust_2in_inplace1, "Map (2 Inputs - In-Place)", cuda_time_2in_inplace.count(), thrust_time_2in_inplace.count());
+    if(enable_prints){
+        compareAndPrint("cuda_2in_inplace1", cuda_2in_inplace1, "thrust_2in_inplace1", thrust_2in_inplace1, "Map (2 Inputs - In-Place)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void twoInputsInPlaceParameters(const size_t N){ 
+two_times_struct twoInputsInPlaceParameters(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (two inputs, modifies in-place)
 
     std::vector<float> cuda_2in_inplace1(N, 2.0f), cuda_2in_inplace2(N, 2.0f);
 
-    auto cuda_time_2in_inplace = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_2in_inplace1, cuda_2in_inplace2, IntensiveComputation2Inputs(), 5, 2.3, true);
     });
 
@@ -145,7 +176,7 @@ void twoInputsInPlaceParameters(const size_t N){
 
     std::vector<float> thrust_2in_inplace1(N, 2.0f), thrust_2in_inplace2(N, 2.0f);
 
-    auto thrust_time_2in_inplace = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec1 = thrust_2in_inplace1;
         thrust::device_vector<float> d_vec2 = thrust_2in_inplace2;
         thrust::transform(d_vec1.begin(), d_vec1.end(), d_vec2.begin(), d_vec1.begin(),
@@ -153,15 +184,21 @@ void twoInputsInPlaceParameters(const size_t N){
         thrust::copy(d_vec1.begin(), d_vec1.end(), thrust_2in_inplace1.begin());
     });
 
-    compareAndPrint("cuda_2in_inplace1", cuda_2in_inplace1, "thrust_2in_inplace1", thrust_2in_inplace1, "Map (2 Inputs - In-Place)", cuda_time_2in_inplace.count(), thrust_time_2in_inplace.count());
+    if(enable_prints){
+        compareAndPrint("cuda_2in_inplace1", cuda_2in_inplace1, "thrust_2in_inplace1", thrust_2in_inplace1, "Map (2 Inputs - In-Place)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void twoInputsOutput(const size_t N){
+two_times_struct twoInputsOutput(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (two inputs, single output)
 
     std::vector<float> cuda_2in_output1(N, 2.0f), cuda_2in_output2(N, 2.0f), cudaOutput_2in_output(N);
 
-    auto cuda_time_2in_output = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_2in_output1, cuda_2in_output2, IntensiveComputation2Inputs(), cudaOutput_2in_output);
     });
 
@@ -170,7 +207,7 @@ void twoInputsOutput(const size_t N){
     std::vector<float> thrust_2in_output1(N, 2.0f), thrust_2in_output2(N, 2.0f);
     std::vector<float> thrustOut_2in_output(N);
 
-    auto thrust_time_2in_output = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec1 = thrust_2in_output1;
         thrust::device_vector<float> d_vec2 = thrust_2in_output2;
         thrust::device_vector<float> d_out(thrustOut_2in_output.size());
@@ -179,15 +216,21 @@ void twoInputsOutput(const size_t N){
         thrust::copy(d_out.begin(), d_out.end(), thrustOut_2in_output.begin());
     });
 
-    compareAndPrint("cudaOutput_2in_output", cudaOutput_2in_output, "thrustOut_2in_output", thrustOut_2in_output, "Map (2 Inputs - Output)", cuda_time_2in_output.count(), thrust_time_2in_output.count());
+    if(enable_prints){
+        compareAndPrint("cudaOutput_2in_output", cudaOutput_2in_output, "thrustOut_2in_output", thrustOut_2in_output, "Map (2 Inputs - Output)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void twoInputsOutputParameters(const size_t N){
+two_times_struct twoInputsOutputParameters(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (two inputs, single output)
 
     std::vector<float> cuda_2in_output_params1(N, 2.0f), cuda_2in_output_params2(N, 2.0f), cudaOutput_2in_output_params(N);
 
-    auto cuda_time_2in_output_params = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_2in_output_params1, cuda_2in_output_params2, IntensiveComputation2Inputs(), cudaOutput_2in_output_params, 5, 2.3, true);
     });
 
@@ -196,7 +239,7 @@ void twoInputsOutputParameters(const size_t N){
     std::vector<float> thrust_2in_output_params1(N, 2.0f), thrust_2in_output_params2(N, 2.0f);
     std::vector<float> thrustOut_2in_output_params(N);
 
-    auto thrust_time_2in_output_params = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec1 = thrust_2in_output_params1;
         thrust::device_vector<float> d_vec2 = thrust_2in_output_params2;
         thrust::device_vector<float> d_out(thrustOut_2in_output_params.size());
@@ -205,15 +248,21 @@ void twoInputsOutputParameters(const size_t N){
         thrust::copy(d_out.begin(), d_out.end(), thrustOut_2in_output_params.begin());
     });
 
-    compareAndPrint("cudaOutput_2in_output_params", cudaOutput_2in_output_params, "thrustOut_2in_output_params", thrustOut_2in_output_params, "Map (2 Inputs - Output with Params)", cuda_time_2in_output_params.count(), thrust_time_2in_output_params.count());
+    if(enable_prints){
+        compareAndPrint("cudaOutput_2in_output_params", cudaOutput_2in_output_params, "thrustOut_2in_output_params", thrustOut_2in_output_params, "Map (2 Inputs - Output with Params)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void doublePlusA(const size_t N){
+two_times_struct doublePlusA(const size_t N, const bool enable_prints = true){
+    two_times_struct times;
+
     // CUDA map without parameters (single input, modifies in-place)
 
     std::vector<float> cuda_doublePlusA(N, 2.0f);
 
-    auto cuda_time_doublePlusA = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_doublePlusA, DoublePlusA(), 1);
     });
 
@@ -221,113 +270,136 @@ void doublePlusA(const size_t N){
 
     std::vector<float> thrust_doublePlusA(N, 2.0f);
 
-    auto thrust_time_doublePlusA = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_vec = thrust_doublePlusA;
         thrust::transform(d_vec.begin(), d_vec.end(), d_vec.begin(),
                           DoublePlusA());
         thrust::copy(d_vec.begin(), d_vec.end(), thrust_doublePlusA.begin());
     });
 
-    compareAndPrint("cuda_doublePlusA", cuda_doublePlusA, "thrust_doublePlusA", thrust_doublePlusA, "Map (1 Input - In-Place)", cuda_time_doublePlusA.count(), thrust_time_doublePlusA.count());
+    if(enable_prints){
+        compareAndPrint("cuda_doublePlusA", cuda_doublePlusA, "thrust_doublePlusA", thrust_doublePlusA, "Map (1 Input - In-Place)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void mysaxpy(const size_t N) {
-    const float a = 2.0f;  // Scalar parameter
+two_times_struct mysaxpy(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
+    const float a = 2.0f; 
 
     // CUDA version
     std::vector<float> cuda_saxpy_x(N, 2.0f), cuda_saxpy_y(N, 3.0f);
 
-    auto cuda_time_saxpy = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         map(cuda_saxpy_x, cuda_saxpy_y, saxpy(), a);
     });
 
     // Thrust version
     std::vector<float> thrust_saxpy_x(N, 2.0f), thrust_saxpy_y(N, 3.0f);
 
-    auto thrust_time_saxpy = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust::device_vector<float> d_x = thrust_saxpy_x;
         thrust::device_vector<float> d_y = thrust_saxpy_y;
 
-        // Capture `a` in a device lambda
         thrust::transform(d_x.begin(), d_x.end(), d_y.begin(), d_x.begin(),
                           [=] __device__ (float x, float y) { return saxpy()(x, y, a); });
 
         thrust::copy(d_x.begin(), d_x.end(), thrust_saxpy_x.begin());
     });
 
-    compareAndPrint("cuda_saxpy_x", cuda_saxpy_x, "thrust_saxpy_x", thrust_saxpy_x, 
-                    "Map (2 Inputs - In-Place with Params)", cuda_time_saxpy.count(), thrust_time_saxpy.count());
+
+    if(enable_prints){
+        compareAndPrint("cuda_saxpy_x", cuda_saxpy_x, "thrust_saxpy_x", thrust_saxpy_x, 
+            "Map (2 Inputs - In-Place with Params)", times.cuda_time.count(), times.cuda_time.count());
+    }
+
+    return times;
 }
 
-void simpleReduce(const size_t N) {
+two_times_struct simpleReduce(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
     std::vector<int> cuda_reduce(N, 1);
     std::vector<int> thrust_reduce(N, 1);
 
     // CUDA reduction
     std::vector<int> cuda_result_vector(1);
-    auto cuda_time_reduce = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         cuda_result_vector[0] = reduce(cuda_reduce, 0,Sum());
     });
 
     // Thrust reduction
     thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
     std::vector<int> thrust_result_vector(1);
-    auto thrust_time_reduce = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Sum());
     });
 
-    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.cuda_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    }
 
-    // Print results
-    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
-    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    return times;
 }
 
-void ReduceMult(const size_t N) {
+two_times_struct ReduceMult(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
     std::vector<int> cuda_reduce(N, 1);
     std::vector<int> thrust_reduce(N, 1);
 
     // CUDA reduction
     std::vector<int> cuda_result_vector(1);
-    auto cuda_time_reduce = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         cuda_result_vector[0] = reduce(cuda_reduce, 1 ,Multiply());
     });
 
     // Thrust reduction
     thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
     std::vector<int> thrust_result_vector(1);
-    auto thrust_time_reduce = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 1, Multiply());
     });
 
-    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.cuda_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    }
 
-    // Print results
-    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
-    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    return times;
+
 }
 
 
-void ReduceMax(const size_t N) {
+two_times_struct ReduceMax(const size_t N, const bool enable_prints = true) {
+    two_times_struct times;
+
     std::vector<int> cuda_reduce(N, 1);
     std::vector<int> thrust_reduce(N, 1);
 
     // CUDA reduction
     std::vector<int> cuda_result_vector(1);
-    auto cuda_time_reduce = timeFunction([&]() {
+    times.cuda_time = timeFunction([&]() {
         cuda_result_vector[0] = reduce(cuda_reduce, 0,Max());
     });
 
     // Thrust reduction
     thrust::device_vector<int> d_vec(cuda_reduce.begin(), cuda_reduce.end());
     std::vector<int> thrust_result_vector(1);
-    auto thrust_time_reduce = timeFunction([&]() {
+    times.thrust_time = timeFunction([&]() {
         thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Max());
     });
 
-    compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", cuda_time_reduce.count(), thrust_time_reduce.count());
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.cuda_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    }
 
-    // Print results
-    std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
-    std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    return times;
 }
