@@ -33,6 +33,10 @@ void map_impl(Container& container, Func func, Args... args) {
     int numBlocks = (size + blockSize - 1) / blockSize;
 
     mapKernel<<<numBlocks, blockSize>>>(d_array, size, func, args...);
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
     cudaDeviceSynchronize();
     cudaMemcpy(container.data(), d_array, bytes, cudaMemcpyDeviceToHost);
     cudaFree(d_array);
@@ -53,6 +57,10 @@ void map_impl(Container& input, Func func, Container& output, Args... args) {
     int numBlocks = (size + blockSize - 1) / blockSize;
 
     mapKernel<<<numBlocks, blockSize>>>(d_array, size, func, args...);
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
     cudaDeviceSynchronize();
     cudaMemcpy(output.data(), d_array, bytes, cudaMemcpyDeviceToHost);
     cudaFree(d_array);
@@ -76,6 +84,11 @@ void map_impl(Container& input1, Container& input2, Func func, Args... args) {
     int numBlocks = (size + blockSize - 1) / blockSize;
 
     mapKernel2inputs<<<numBlocks, blockSize>>>(d_array, d_array2, size, func, args...);
+
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
 
     cudaDeviceSynchronize();
     cudaMemcpy(input1.data(), d_array, bytes, cudaMemcpyDeviceToHost);
@@ -103,6 +116,11 @@ void map_impl(Container& input1, Container& input2, Func func, Container& output
     int numBlocks = (size + blockSize - 1) / blockSize;
 
     mapKernel2inputs<<<numBlocks, blockSize>>>(d_array,d_array2, size, func, args...);
+
+    cudaError_t err = cudaGetLastError();
+    if (err != cudaSuccess) {
+        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
+    }
     
     cudaDeviceSynchronize();
 

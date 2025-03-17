@@ -23,7 +23,6 @@ struct saxpy {
     }
 };
 
-
 struct IntensiveComputationParams {
     __device__ float operator()(float x, int a=5, double b=2.3, bool flag=true) const {
         for (int i = 0; i < 100; ++i) { 

@@ -36,7 +36,7 @@ void test_capabilities(const size_t N){
     std::cout << "------------------------------------------------" << std::endl;
     
     std::cout << "Testing reduces" << std::endl;
-    simpleReduce(N);
+    ReduceSum(N);
     std::cout << "------------------------------------------------" << std::endl;
     ReduceMult(N);
     std::cout << "------------------------------------------------" << std::endl;
@@ -44,29 +44,46 @@ void test_capabilities(const size_t N){
     std::cout << "------------------------------------------------" << std::endl;
 }
 
-void benchmark(const size_t MIN_N,const size_t MAX_N, std::vector<BenchmarkFunction>& functions, bool verbose = false){
+void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, std::vector<BenchmarkFunction>& functions, bool verbose = false){
     two_times_struct two_times;
-    //for each function on a vector do the following
-    for (auto& function : functions){
-        std::string functionName = typeid(function).name();  
-        std::cout << "Function: " << functionName << std::endl;
-        for(size_t N = MAX_N; N >= MIN_N; N /= 10){
-            std::cout << "N = " << formatNumber(N) << std::endl;
-            two_times = function(N, verbose);
-            std::cout << "CUDA time: " << two_times.cuda_time.count() << " ms" << "\nThrust time: " << two_times.thrust_time.count() << " ms" << std::endl;
-            std::cout << "------------------------------------------------" << std::endl;
+    int function_index = 0;
+    std::vector<std::tuple<int, unsigned __int64, unsigned __int64, double, double>> results;
+
+    for(size_t i = 0; i < NUMB_REPEAT; i++){
+        for (auto& function : functions){
+            std::cout << "Function index: " << function_index << std::endl;
+            std::cout << "#################### LOOP " << i+1 << " ####################" << std::endl;
+            function_index++;
+            for(size_t N = MAX_N; N >= MIN_N; N /= 10){
+                std::cout << "N = " << formatNumber(N) << std::endl;
+                two_times = function(N, verbose);
+                double cudaTime = static_cast<double>(two_times.cuda_time.count());
+                double thrustTime = static_cast<double>(two_times.thrust_time.count());
+                std::cout << "CUDA time: " << cudaTime  << " ms" << "\nThrust time: " << thrustTime << " ms" << std::endl;
+                std::cout << "------------------------------------------------" << std::endl;
+                results.emplace_back(function_index, i + 1, N, cudaTime, thrustTime);
+            }
+            std::cout << "#########################################################" << std::endl;
         }
-        std::cout << "#########################################################" << std::endl;
+        function_index = 0;
+    } 
+
+    std::cout << "Function,Loop, N, CUDA Time (ms),Thrust Time (ms)\n";
+    for (const auto& [func, loop, N, cuda_time, thrust_time] : results) {
+        std::cout << func << ";" << loop << ";" << N << ";" << cuda_time << ";" << thrust_time << "\n";
     }
-    
 }
 
 int main() {
     const size_t MAX_N = 1'000'000'000;
     const size_t MIN_N = 10'000;
 
-    std::vector<BenchmarkFunction> functions = { mysaxpy };
+    std::vector<BenchmarkFunction> functions = {mysaxpy, mysaxpyReverse,
+        IntensiveComputationCompare, IntensiveComputationCompareReverse,
+        ReduceMax, ReduceMaxReverse,
+        ReduceSum, ReduceSumReverse 
+        };
 
-    benchmark(MIN_N, MAX_N, functions, false);
+    benchmark(MIN_N, MAX_N, 10, functions, false);
     return 0;
 }
