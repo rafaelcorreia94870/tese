@@ -5,6 +5,15 @@
 #include <algorithm>
 #include <cmath>
 #include <list>
+#include <fstream>
+#include "skeletons/skeletons.cuh"
+
+#include <thrust/transform.h>
+#include <thrust/device_vector.h>
+#include <thrust/sequence.h>
+#include <thrust/execution_policy.h>
+
+#include <numeric>
 
 
 template <typename Container, typename Func, typename... Args>
@@ -52,4 +61,58 @@ auto timeFunction(Func&& func) {
     func();
     auto end = std::chrono::high_resolution_clock::now();
     return std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+}
+
+void MandelbrotRender(const size_t width, const size_t height, const int maxIter) {
+    size_t size = width * height;
+    
+    std::vector<int> mandelbrotSet(size);
+    std::iota(mandelbrotSet.begin(), mandelbrotSet.end(), 0);
+        
+    map(mandelbrotSet, MandelbrotFunctor(maxIter, -2.0f, 1.0f, -1.5f, 1.5f, width, height));
+
+
+    std::ofstream file("mandelbrot.pgm");
+    if (!file) {
+        std::cerr << "Error: Unable to open file for writing!" << std::endl;
+        return;
+    }    
+    
+    file << "P2\n" << width << " " << height << "\n255\n";
+    for (size_t i = 0; i < size; ++i) {
+        file << (mandelbrotSet[i] * 255 / maxIter) << " ";
+        if ((i + 1) % width == 0) file << "\n";
+    }
+    
+    file.close();
+    std::cout << "Mandelbrot set saved as 'mandelbrot.pgm'" << std::endl;
+    //////////////////////////////////////////////////////////////
+
+    thrust::device_vector<int> thrust_result(size);
+    std::vector<int> thrust_result_host(size);
+    thrust::device_vector<int> indices2(size);
+    thrust::sequence(indices2.begin(), indices2.end());
+
+
+    thrust::transform(thrust::device, indices2.begin(), indices2.end(), thrust_result.begin(),
+                          MandelbrotFunctor(maxIter, -2.0f, 1.0f, -1.5f, 1.5f, width, height));
+    thrust::copy(thrust_result.begin(), thrust_result.end(), thrust_result_host.begin());
+    
+
+    std::ofstream file2("mandelbrotthrust.pgm");
+    if (!file2) {
+        std::cerr << "Error: Unable to open file for writing!" << std::endl;
+        return;
+    }
+    
+    file2 << "P2\n" << width << " " << height << "\n255\n";
+    
+    for (size_t i = 0; i < size; ++i) {
+        file2 << (thrust_result_host[i] * 255 / maxIter) << " ";
+        if ((i + 1) % width == 0) file2 << "\n";
+    }
+    
+    file2.close();
+    std::cout << "Mandelbrot set saved as 'mandelbrotthrust.pgm'" << std::endl;
+
 }

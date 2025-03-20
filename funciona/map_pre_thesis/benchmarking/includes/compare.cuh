@@ -4,6 +4,8 @@
 #include "skeletons/skeletons.cuh"
 #include <thrust/transform.h>
 #include <thrust/device_vector.h>
+#include <thrust/sequence.h>
+#include <thrust/execution_policy.h>
 #include <iostream>
 #include <vector>
 #include <chrono>
@@ -11,6 +13,7 @@
 #include <cmath>
 #include <list>
 #include "types/two_times_struct.h"
+#include <numeric>
 
 
 two_times_struct oneInputInPlace(const size_t N, const bool enable_prints = true) {
@@ -555,6 +558,37 @@ two_times_struct IntensiveComputationCompareReverse(const size_t N, const bool e
                         "thrust_1in_inplace", thrust_output, 
                         "Map (1 Input - In-Place)", 
                         times.cuda_time.count(), times.thrust_time.count());
+    }
+
+    return times;
+}
+
+two_times_struct MandelbrotBenchmark(const size_t width, const size_t height, const int maxIter, const bool enable_prints = true) {
+    two_times_struct times;
+    size_t N = width * height;
+
+    std::vector<int> indices(N);
+    std::iota(indices.begin(), indices.end(), 0);
+    std::vector<int> cuda_result(N, 0);
+
+    times.cuda_time = timeFunction([&]() {
+        map(indices, MandelbrotFunctor(maxIter, -2.0f, 1.0f, -1.5f, 1.5f, width, height), cuda_result);
+    });
+
+    thrust::device_vector<int> thrust_result(N);
+    std::vector<int> thrust_result_host(N);
+    thrust::device_vector<int> indices2(N);
+    thrust::sequence(indices2.begin(), indices2.end());
+
+    
+    times.thrust_time = timeFunction([&]() {
+        thrust::transform(thrust::device, indices2.begin(), indices2.end(), thrust_result.begin(),
+                            MandelbrotFunctor(maxIter, -2.0f, 1.0f, -1.5f, 1.5f, width, height));
+        thrust::copy(thrust_result.begin(), thrust_result.end(), thrust_result_host.begin());
+    });
+    
+    if (enable_prints) {
+        compareAndPrint("cuda_result", cuda_result, "thrust_result", thrust_result_host, "Mandelbrot", times.cuda_time.count(), times.thrust_time.count());
     }
 
     return times;
