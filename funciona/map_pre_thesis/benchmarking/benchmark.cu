@@ -57,7 +57,7 @@ void mandel_brot(const size_t width, const size_t height, const int maxIter, con
 void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, std::vector<BenchmarkFunction>& functions, bool verbose = false){
     two_times_struct two_times;
     int function_index = 0;
-    std::vector<std::tuple<int, unsigned __int64, unsigned __int64, double, double>> results;
+    std::vector<std::tuple<int, size_t, size_t, long long, long long>> results;
 
     for(size_t i = 0; i < NUMB_REPEAT; i++){
         for (auto& function : functions){
@@ -67,8 +67,8 @@ void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, 
             for(size_t N = MAX_N; N >= MIN_N; N /= 10){
                 std::cout << "N = " << formatNumber(N) << std::endl;
                 two_times = function(N, verbose);
-                double cudaTime = static_cast<double>(two_times.cuda_time.count());
-                double thrustTime = static_cast<double>(two_times.thrust_time.count());
+                long long cudaTime = two_times.cuda_time.count();
+                long long thrustTime = two_times.thrust_time.count();
                 std::cout << "CUDA time: " << cudaTime  << " ms" << "\nThrust time: " << thrustTime << " ms" << std::endl;
                 std::cout << "------------------------------------------------" << std::endl;
                 results.emplace_back(function_index, i + 1, N, cudaTime, thrustTime);
@@ -87,7 +87,7 @@ void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, 
 
 void benchmark(const size_t NUMB_REPEAT, const size_t width, const size_t height, const int maxIter, const int minIter){
     two_times_struct two_times;
-    std::vector<std::tuple<int, unsigned __int64, unsigned __int64, double, double>> results;
+    std::vector<std::tuple<int, size_t, size_t, long long, long long>> results;
     for (size_t i = 0; i < NUMB_REPEAT; i++){
         std::cout << "#################### LOOP " << i+1 << " ####################" << std::endl;
         for (int iter = maxIter; iter >= minIter; iter /= 10){
@@ -113,15 +113,27 @@ int main() {
     int maxIter = 100'000;
 
     std::vector<BenchmarkFunction> functions = {mysaxpy, mysaxpyReverse,
+        IntensiveComputationCompare, IntensiveComputationCompareReverse
+        //ReduceMax, ReduceMaxReverse,
+        //ReduceSum, ReduceSumReverse 
+    };
+    
+    std::vector<BenchmarkFunction> ic = { 
         IntensiveComputationCompare, IntensiveComputationCompareReverse,
-        ReduceMax, ReduceMaxReverse,
-        ReduceSum, ReduceSumReverse 
-        };
+        two_thrust,two_cuda
+    };
+
+    std::vector<BenchmarkFunction> two_inputs = {mysaxpy, mysaxpyReverse};
+
+    std::vector<BenchmarkFunction> reduces = { ReduceSum, ReduceSumReverse};
     
 
-    //benchmark(MIN_N, MAX_N, 10, functions, false);
+    benchmark(MIN_N, MAX_N, 10, functions, false);
     //mandel_brot(width, height, maxIter, true, true);
-    benchmark(10, width, height, 10'000, 100);
+    //benchmark(10, width, height, 10'000, 100);
     //benchmark(10, width, height, MAX_N, MIN_N);
+    //benchmark(MAX_N, MAX_N, 1, ic, true);
+    //benchmark(MAX_N, MAX_N, 1, two_inputs, true);
+    //benchmark(MAX_N, MAX_N, 1, reduces, true);
     return 0;
 }

@@ -1,5 +1,12 @@
 #include "../types/vector.cuh"
 
+#define CUDACHECK(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line) {
+    if (code != cudaSuccess) {
+        fprintf(stderr, "CUDA Error: %s %s %d\n", cudaGetErrorString(code), file, line);
+        exit(code);
+    }
+}
 
 template <typename T, typename Func, typename... Args>
 __global__ void mapKernel(T* d_array, int size, Func func, Args... args) {
@@ -9,6 +16,7 @@ __global__ void mapKernel(T* d_array, int size, Func func, Args... args) {
     }
 }
 
+
 template <typename T, typename Func, typename... Args>
 __global__ void mapKernel2inputs(T* d_array, T* d_array2, int size, Func func, Args... args) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
@@ -17,52 +25,56 @@ __global__ void mapKernel2inputs(T* d_array, T* d_array2, int size, Func func, A
     }
 }
 
-
-
 template <VectorLike Container, typename Func, typename... Args>
 void map_impl(Container& container, Func func, Args... args) {
     using T = typename Container::value_type;
     size_t size = container.size();
-    T* d_array;
     size_t bytes = size * sizeof(T);
+    
+    T* d_array;
+    CUDACHECK(cudaMalloc(&d_array, bytes));
 
-    cudaMalloc(&d_array, bytes);
-    cudaMemcpy(d_array, container.data(), bytes, cudaMemcpyHostToDevice);
+    cudaStream_t stream;
+    CUDACHECK(cudaStreamCreate(&stream));
 
-    int blockSize = 256;
+    CUDACHECK(cudaMemcpyAsync(d_array, container.data(), bytes, cudaMemcpyHostToDevice, stream));
+
+    int blockSize = 1024;
     int numBlocks = (size + blockSize - 1) / blockSize;
 
-    mapKernel<<<numBlocks, blockSize>>>(d_array, size, func, args...);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
-    }
-    cudaDeviceSynchronize();
-    cudaMemcpy(container.data(), d_array, bytes, cudaMemcpyDeviceToHost);
-    cudaFree(d_array);
-}
+    mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func, args...);
+    
+    CUDACHECK(cudaMemcpyAsync(container.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream));
 
+    CUDACHECK(cudaStreamSynchronize(stream));
+    CUDACHECK(cudaStreamDestroy(stream));
+    
+    CUDACHECK(cudaFree(d_array));
+}
 
 template <VectorLike Container, typename Func, typename... Args>
 void map_impl(Container& input, Func func, Container& output, Args... args) {
     using T = typename Container::value_type;
     size_t size = input.size();
-    T* d_array;
     size_t bytes = size * sizeof(T);
 
+    T* d_array;
     cudaMalloc(&d_array, bytes);
-    cudaMemcpy(d_array, input.data(), bytes, cudaMemcpyHostToDevice);
 
-    int blockSize = 256;
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    cudaMemcpyAsync(d_array, input.data(), bytes, cudaMemcpyHostToDevice, stream);
+
+    int blockSize = 1024;
     int numBlocks = (size + blockSize - 1) / blockSize;
 
-    mapKernel<<<numBlocks, blockSize>>>(d_array, size, func, args...);
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
-    }
-    cudaDeviceSynchronize();
+    mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func, args...);
+    
+    cudaStreamSynchronize(stream);
     cudaMemcpy(output.data(), d_array, bytes, cudaMemcpyDeviceToHost);
+
+    cudaStreamDestroy(stream);
     cudaFree(d_array);
 }
 
@@ -70,66 +82,64 @@ template <VectorLike Container, typename Func, typename... Args>
 void map_impl(Container& input1, Container& input2, Func func, Args... args) {
     using T = typename Container::value_type;
     size_t size = input1.size();
-    T* d_array;
-    T* d_array2;
     size_t bytes = size * sizeof(T);
 
+    T* d_array;
+    T* d_array2;
     cudaMalloc(&d_array, bytes);
-    cudaMemcpy(d_array, input1.data(), bytes, cudaMemcpyHostToDevice);
-
     cudaMalloc(&d_array2, bytes);
-    cudaMemcpy(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice);
 
-    int blockSize = 256;
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream);
+
+    int blockSize = 1024;
     int numBlocks = (size + blockSize - 1) / blockSize;
 
-    mapKernel2inputs<<<numBlocks, blockSize>>>(d_array, d_array2, size, func, args...);
+    mapKernel2inputs<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, args...);
+    
+    cudaStreamSynchronize(stream);
+    cudaMemcpyAsync(input1.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
 
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
-    }
-
-    cudaDeviceSynchronize();
-    cudaMemcpy(input1.data(), d_array, bytes, cudaMemcpyDeviceToHost);
+    cudaStreamDestroy(stream);
 
     cudaFree(d_array);
     cudaFree(d_array2);
-
 }
 
 template <VectorLike Container, typename Func, typename... Args>
 void map_impl(Container& input1, Container& input2, Func func, Container& output, Args... args) {
     using T = typename Container::value_type;
     size_t size = input1.size();
-    T* d_array;
-    T* d_array2;
     size_t bytes = size * sizeof(T);
 
+    T* d_array;
+    T* d_array2;
     cudaMalloc(&d_array, bytes);
-    cudaMemcpy(d_array, input1.data(), bytes, cudaMemcpyHostToDevice);
-
     cudaMalloc(&d_array2, bytes);
-    cudaMemcpy(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice);
 
-    int blockSize = 256;
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream);
+
+    int blockSize = 1024;
     int numBlocks = (size + blockSize - 1) / blockSize;
 
-    mapKernel2inputs<<<numBlocks, blockSize>>>(d_array,d_array2, size, func, args...);
-
-    cudaError_t err = cudaGetLastError();
-    if (err != cudaSuccess) {
-        std::cerr << "CUDA Kernel launch failed: " << cudaGetErrorString(err) << std::endl;
-    }
+    mapKernel2inputs<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, args...);
     
-    cudaDeviceSynchronize();
+    cudaStreamSynchronize(stream);
+    cudaMemcpyAsync(output.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
 
-    cudaMemcpy(output.data(), d_array, bytes, cudaMemcpyDeviceToHost);
+    cudaStreamDestroy(stream);
 
     cudaFree(d_array);
     cudaFree(d_array2);
-
 }
+
 
 template <VectorLike Container, typename Func, typename... Args>
 void map(Container& container, Func func, Args... args) {

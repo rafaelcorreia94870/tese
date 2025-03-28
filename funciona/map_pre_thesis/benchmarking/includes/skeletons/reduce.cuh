@@ -25,6 +25,7 @@ __global__ void partialReduceKernel(T* d_in, T* d_out, int N, T identity, Binary
         }
         __syncthreads();
     }
+
     
     if (tid == 0) {
         d_out[blockIdx.x] = sdata[0];
@@ -37,6 +38,7 @@ void reduce_kernel(T* d_in, T* d_out, int N, T identity,BinaryOp op, Args... arg
     int blocksPerGrid = (N + threadsPerBlock * 2 - 1) / (threadsPerBlock * 2);
 
     while (blocksPerGrid > 1) {
+        std::cout << "partialReduce launched with " << blocksPerGrid << " blocks\n";
         partialReduceKernel<<<blocksPerGrid, threadsPerBlock, threadsPerBlock * sizeof(T)>>>(d_in, d_out, N, identity, op, args...);
         N = blocksPerGrid;
         d_in = d_out;
@@ -54,13 +56,20 @@ T reduce_impl(const Collection & h_in, T identity, BinaryOp op, Args... args) {
     T *d_in, *d_out;
     cudaMalloc(&d_in, N * sizeof(T));
     cudaMalloc(&d_out, N * sizeof(T));
-    cudaMemcpy(d_in, h_in.data(), N * sizeof(T), cudaMemcpyHostToDevice);
+
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+
+    cudaMemcpyAsync(d_in, h_in.data(), N * sizeof(T), cudaMemcpyHostToDevice, stream);
 
     reduce_kernel(d_in, d_out, N, identity, op, args...);
 
-    T result;
-    cudaMemcpy(&result, d_out, sizeof(T), cudaMemcpyDeviceToHost);
+    cudaStreamSynchronize(stream);
 
+    T result;
+    cudaMemcpyAsync(&result, d_out, sizeof(T), cudaMemcpyDeviceToHost, stream);
+
+    cudaStreamDestroy(stream);
     cudaFree(d_in);
     cudaFree(d_out);
 
