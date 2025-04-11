@@ -13,3 +13,7 @@ benchmarking/compile.bat
 benchmarking/profiling/*           
                                                     
 benchmarking/sheet/~$benchmark2clean.xlsx
+experimental/compile.bat
+experimental/experimental.exe
+experimental/experimental.exp
+experimental/experimental.lib
