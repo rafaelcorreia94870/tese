@@ -1,5 +1,7 @@
-#ifndef VECTOR_CUH
-#define VECTOR_CUH
+#ifndef VECTORLIKE_CUH
+#define VECTORLIKE_CUH
+
+namespace rafa {
 
 template <typename T>
 concept VectorLike = requires(T a, size_t i) {
@@ -10,5 +12,8 @@ concept VectorLike = requires(T a, size_t i) {
     { a[i] };
     //typename T::value_type;
 } && std::ranges::range<T>;
+
+
+}
 
 #endif
