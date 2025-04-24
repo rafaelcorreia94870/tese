@@ -1,4 +1,8 @@
-#include "../types/types.cuh"
+#ifndef REDUCE_CUH
+#define REDUCE_CUH
+
+#include "../types/vector_like.cuh"
+#include "../collections/vector.cuh"
 
 #include <cstdio>
 #include <cuda_runtime.h>
@@ -95,3 +99,5 @@ namespace rafa {
         return rafa::skeletons::reduce(*this, kernel, std::forward<Args>(args)...);
     }
 }
+
+#endif
