@@ -14,108 +14,113 @@
 #include "../types/vector_like.cuh"
 #include "skel_queue.cuh"
 #include "../types/skel_obj.cuh"
+#include "iterator.cuh"
 
 namespace rafa {
 
     template <typename T>
     class vector {
     public:
-        std::vector<T> host_data;
+        T* host_pinned_data = nullptr;
         T* device_data;
         size_t vec_size;
         SkelQueue skel_queue;
+        cudaStream_t stream;
 
         using value_type = T;
         using iterator = typename std::vector<T>::iterator;
         using const_iterator = typename std::vector<T>::const_iterator;
 
-        vector() : device_data(nullptr), vec_size(0) {}
-
-        vector(size_t size, T* device_data) : vec_size(size), device_data(device_data) {
-            host_data.resize(size);
-            cudaHostAlloc(reinterpret_cast<void**>(&device_data), size * sizeof(T), cudaHostAllocDefault);
-        }
-
-        vector(size_t size) : vec_size(size), host_data(size), device_data(nullptr) {
-            host_data.resize(size);
-            cudaHostAlloc(reinterpret_cast<void**>(&device_data), size * sizeof(T), cudaHostAllocDefault);
-        }
-
-        vector(size_t size, const T& value, cudaStream_t stream = 0) : vec_size(size), host_data(size, value), device_data(nullptr) {
-            cudaHostAlloc(reinterpret_cast<void**>(&device_data), size * sizeof(T), cudaHostAllocDefault);
-            host_data.resize(size, value);
+        vector() {
+            //std::cout << "\nDEFAULT CONSTRUCTOR CALLED\n" << std::endl;
             cudaStreamCreate(&stream);
-            cudaMemcpyAsync(device_data, host_data.data(), size * sizeof(T), cudaMemcpyHostToDevice, stream);
-            cudaStreamDestroy(stream);
+        }
+
+        vector(size_t size) : vec_size(size) {
+            //std::cout << "\nCONSTRUCTOR WITH SIZE CALLED\n" << std::endl;
+            cudaStreamCreate(&stream);
+            alloc_host();
+            alloc_device();
+        }
+
+        vector(size_t size, const T& value) : vec_size(size) {
+            //std::cout << "\nCONSTRUCTOR WITH SIZE AND VALUE CALLED\n" << std::endl;
+            cudaStreamCreate(&stream);
+            alloc_host();
+            alloc_device();
+            std::fill(host_pinned_data, host_pinned_data + vec_size, value);
+            sync_host_to_device();
+        }
+
+        // construct that accpets {}
+        vector(std::initializer_list<T> init) : vec_size(init.size()) {
+            //std::cout << "\nCONSTRUCTOR WITH INITIALIZER LIST CALLED\n" << std::endl;
+            cudaStreamCreate(&stream);
+            alloc_host();
+            alloc_device();
+            std::copy(init.begin(), init.end(), host_pinned_data);
+            sync_host_to_device();
         }
 
         ~vector() {
-            if (device_data) {
-                cudaFree(device_data);
-            }
+            //std::cout << "\nDESTRUCTOR CALLED\n" << std::endl;
+            //if (host_pinned_data) cudaFreeHost(host_pinned_data);
+            //if (device_data) cudaFree(device_data);
+            //cudaStreamDestroy(stream);
         }
+
+        //setters of device_data
+        void set_device_data(T* data) {
+            device_data = data;
+        }
+
+        void alloc_host() {
+            if (host_pinned_data) cudaFreeHost(host_pinned_data);
+            cudaHostAlloc(&host_pinned_data, vec_size * sizeof(T), cudaHostAllocDefault);
+        }
+    
+        void alloc_device() {
+            if (device_data) cudaFree(device_data);
+            cudaMalloc(&device_data, vec_size * sizeof(T));
+        }
+
+        rafa::iterator<T> begin() { return rafa::iterator<T>(host_pinned_data); }
+        rafa::iterator<T> end()   { return rafa::iterator<T>(host_pinned_data + vec_size); }
+
+
+        // Element access
+        T& operator[](size_t i) { return host_pinned_data[i]; }
+        const T& operator[](size_t i) const { return host_pinned_data[i]; }
+
+        T* data() { return host_pinned_data; }
+        const T* data() const { return host_pinned_data; }
 
         size_t size() const { return vec_size; }
+        bool empty() const { return vec_size == 0; }
 
-        iterator begin() { return host_data.begin(); }
-        const_iterator begin() const { return host_data.begin(); }
-
-        iterator end() { return host_data.end(); }
-        const_iterator end() const { return host_data.end(); }
-
-        T& operator[](size_t i) { return host_data[i]; }
-        const T& operator[](size_t i) const { return host_data[i]; }
-
-        T* data() { return host_data.data(); }
-        const T* data() const { return host_data.data(); }
-
-        void push_back(const T& value) {
-            host_data.push_back(value);
-            vec_size = host_data.size();
+        void print() const {
+            std::cout << "Vector contents: ";
+            for (size_t i = 0; i < vec_size; ++i)
+                std::cout << host_pinned_data[i] << " ";
+            std::cout << std::endl;
         }
 
-        bool empty() const { return host_data.empty(); }
-
-        void swap(vector& other) {
-            host_data.swap(other.host_data);
-            std::swap(device_data, other.device_data);
-            std::swap(vec_size, other.vec_size);
+        void print(const size_t index) {
+            if (index < vec_size)
+                std::cout << "Element at index " << index << ": " << host_pinned_data[index] << std::endl;
+            else
+                std::cout << "Index out of bounds." << std::endl;
         }
 
         bool valid_index(size_t i) const { return i < vec_size; }
 
         void resize(size_t new_size) {
-            if (new_size != vec_size) {
-                host_data.resize(new_size);
-                vec_size = new_size;
-                if (device_data) {
-                    cudaFree(device_data);
-                    device_data = nullptr;
-                }
-            }
+            vec_size = new_size;
+            alloc_host();
+            alloc_device();
         }
+    
 
-        void malloc_device(cudaStream_t stream) {
-            if (device_data) {
-                cudaFree(device_data);
-            }
-            cudaHostAlloc(&device_data, vec_size * sizeof(T));
-        }
-
-        void print() {
-            for (size_t i = 0; i < host_data.size(); ++i) {
-                std::cout << host_data[i] << " ";
-            }
-            std::cout << std::endl;
-        }
-
-        void print(const size_t index) {
-            if (index < vec_size) {
-                std::cout << "Element at index " << index << ": " << host_data[index] << std::endl;
-            } else {
-                std::cout << "Index out of bounds." << std::endl;
-            }
-        }
 
         void check_mem_bytes() {
             size_t size = 0;
@@ -129,17 +134,18 @@ namespace rafa {
             }
         }
 
-        void sync_host_to_device(cudaStream_t stream = 0) {
-            if (device_data == nullptr){
-                cudaHostAlloc(reinterpret_cast<void**>(&device_data), vec_size * sizeof(T), cudaHostAllocDefault);
-            }
-            if (host_data.empty()) return;
-            cudaMemcpyAsync(device_data, host_data.data(), vec_size * sizeof(T), cudaMemcpyHostToDevice, stream);
+        void sync_host_to_device() {
+            if (!host_pinned_data || !device_data) return;
+            cudaMemcpyAsync(device_data, host_pinned_data, vec_size * sizeof(T), cudaMemcpyHostToDevice, stream);
+            cudaStreamSynchronize(stream);
         }
-
-        void sync_device_to_host(cudaStream_t stream = 0) {
-            if (!device_data) return;
-            cudaMemcpyAsync(host_data.data(), device_data, vec_size * sizeof(T), cudaMemcpyDeviceToHost, stream);
+    
+        void sync_device_to_host() {
+            if (!host_pinned_data || !device_data) return;
+            std::cout << "Syncing device to host" << std::endl;
+            cudaMemcpyAsync(host_pinned_data, device_data, vec_size * sizeof(T), cudaMemcpyDeviceToHost, stream);
+            cudaStreamSynchronize(stream);
+            std::cout << "Sync complete" << std::endl;
         }
 
         void simplify_skeletons() {
@@ -191,11 +197,43 @@ namespace rafa {
 
         // Single input
         
+        template <typename Func>
+        vector<T> map_dispatch(Func kernel) {
+            rafa::SkeletonObject<Func, vector<T>>* obj;
+            std::vector<vector<T>*> input_vec{static_cast<vector<T>*>(this)};
+
+            obj = new rafa::SkeletonObject<Func, vector<T>>(
+                "Map", input_vec, kernel
+            );
+        
+            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
+
+            this->skel_queue.push_back(obj);
+
+            std::cout << "Pushed SkeletonObject to skel_queue" << std::endl;
+            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            if (!this->skel_queue.empty()) {
+                std::cout << "skel_queue skeletonType of first element: " << this->skel_queue.front()->getSkeletonType() << std::endl;
+            } else {
+                std::cout << "skel_queue is empty" << std::endl;
+            }
+            return *this;
+        }
+
+
         template <typename Func, typename... Args>
         vector<T> map_dispatch(Func kernel, Args... args) {
-            auto obj = new rafa::SkeletonObject<Func, vector<T>>(
-                "Map", std::vector<vector<T>*>{static_cast<vector<T>*>(this)}, kernel, args...
+        rafa::SkeletonObject<Func, vector<T>>* obj;
+        std::vector<vector<T>*> input_vec{static_cast<vector<T>*>(this)};
+        if constexpr (sizeof...(args) > 0) {
+            obj = new rafa::SkeletonObject<Func, vector<T>, Args...>(
+                "Map", input_vec, kernel, std::make_tuple(args...)
             );
+        } else {
+            obj = new rafa::SkeletonObject<Func, vector<T>>(
+                "Map", input_vec, kernel
+            );
+        }
             std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
 
             this->skel_queue.push_back(obj);
@@ -212,23 +250,41 @@ namespace rafa {
 
         // Single input + output
 
+        template <typename Func, VectorLike Container>
+        vector<T> map_dispatch(Func kernel, Container& output) {
+            
+                auto obj = new rafa::SkeletonObject<Func, Container>(
+                    "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output
+                );
+                this->skel_queue.push_back(obj);
+           
+            return *this;
+        }
+
         template <typename Func, VectorLike Container, typename... Args>
         vector<T> map_dispatch(Func kernel, Container& output, Args... args) {
-            auto obj = new rafa::SkeletonObject<Func, Container>(
-                "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output, args...
-            );
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
-            this->skel_queue.push_back(obj);
+            if constexpr (sizeof...(args) > 0) {
+                auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
+                    "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output, args...
+                );
+                this->skel_queue.push_back(obj);
+            } else {
+                auto obj = new rafa::SkeletonObject<Func, Container>(
+                    "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output
+                );
+                this->skel_queue.push_back(obj);
+            }
 
             return *this;
         }
+
 
         // Two inputs
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T> map_dispatch(Container& input2, Func kernel, Args... args) {
-            auto obj = new rafa::SkeletonObject<Func, Container>(
-                "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, args...
+            auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
+                "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, std::make_tuple(args...)
             );
             std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
             this->skel_queue.push_back(obj);
@@ -239,36 +295,45 @@ namespace rafa {
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T> map_dispatch(Container& input2, Func kernel, Container& output, Args... args) {
-            auto obj = new rafa::SkeletonObject<Func, Container>(
-                "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, output, args...
-            );
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
-            this->skel_queue.push_back(obj);
+            if constexpr (sizeof...(args) > 0) {
+                auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
+                    "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, output, std::make_tuple(args...)
+                );
+                this->skel_queue.push_back(obj);
+                
+            } else {
+                auto obj = new rafa::SkeletonObject<Func, Container>(
+                    "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, output
+                );
+                 this->skel_queue.push_back(obj);
+
+            }
+
             return *this;
         }
 
 
         template <typename Func, typename... Args>
         vector<T> smart_map(Func kernel, Args... args) {
-            return map_dispatch(kernel, args...);
+            return map_dispatch<Func,Args...>(kernel, args...);
         }
 
 
         template <typename Func, VectorLike Container, typename... Args>
-        vector<T> smart_map(Func kernel,Container output ,Args... args) {
-            return map_dispatch(kernel, output, args...);
+        vector<T> smart_map(Func kernel,Container& output ,Args... args) {
+            return map_dispatch<Func,Container, Args...>(kernel, output, args...);
         }
 
 
         template <typename Func, VectorLike Container, typename... Args>
-        vector<T> smart_map(Container input2, Func kernel, Args... args) {
-            return map_dispatch(input2, kernel, args...);
+        vector<T> smart_map(Container& input2, Func kernel, Args... args) {
+            return map_dispatch<Func, Container, Args...>(input2, kernel, args...);
         }
 
 
         template <typename Func, VectorLike Container, typename... Args>
-        vector<T> smart_map(Container input2, Func kernel, Container output, Args... args) {
-            return map_dispatch(input2, kernel, output, args...);
+        vector<T> smart_map(Container& input2, Func kernel, Container& output, Args... args) {
+            return map_dispatch<Func, Container, Args...>(input2, kernel, output, args...);
         }
 
         template <typename Func, typename... Args>

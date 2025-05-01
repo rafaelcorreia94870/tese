@@ -9,48 +9,98 @@ namespace rafa {
    // namespace skeletons {
 
 
-
-    template <VectorLike Container, typename Func>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func>
     void map_impl(Container& container, Func func) {
+        std::cout << "\nmap_impl with 1 input\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = container.size();
-
-        mapKernel<<<1, 1>>>(container.device_data, size, func);
-        return;
         size_t bytes = size * sizeof(T);
-
+   
         T* d_array;
-
         cudaStream_t stream;
-        CUDACHECK(cudaStreamCreate(&stream));
-
+   
         if constexpr (is_rafa_vector<Container>::value) {
-            container.sync_host_to_device();
+            stream = container.stream;
+        
+            if constexpr (sync_device) {
+                std::cout << "syncing host to device" << std::endl;
+                container.sync_host_to_device();
+            }
+        
             d_array = container.device_data;
+        
+            if (d_array == nullptr) {
+                std::cout << "Device data is null. Allocating..." << std::endl;
+                cudaMalloc(&container.device_data, bytes);
+                d_array = container.device_data;
+            }
+            else {
+                std::cout << "Device pointer :" << d_array << std::endl;
+            }
+   
         } else {
-            cudaHostAlloc(&d_array, bytes);
-            cudaMemcpyAsync(d_array, container.data(), bytes, cudaMemcpyHostToDevice, stream);
-        }
-
+                std::cout << "non-rafa vector, allocate device + pinned host copy" << std::endl;
+                T* pinned_host = nullptr;
+            
+                cudaStreamCreate(&stream);
+            
+                cudaMalloc(&d_array, bytes);
+            
+                cudaHostAlloc(reinterpret_cast<void**>(&pinned_host), bytes, cudaHostAllocDefault);
+            
+                std::memcpy(pinned_host, container.data(), bytes);
+            
+                cudaMemcpyAsync(d_array, pinned_host, bytes, cudaMemcpyHostToDevice, stream);
+            
+                cudaStreamAddCallback(stream, [](cudaStream_t s, cudaError_t status, void* userData) {
+                    cudaFreeHost(userData);
+                }, pinned_host, 0);
+       }
+   
+        // Kernel launch
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
+        if (d_array == nullptr) {
+            std::cerr << "ERROR: rafa::vector has no device_data allocated!" << std::endl;
+        }
 
+        
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func);
+        CUDACHECK(cudaStreamSynchronize(stream));
+        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        
+   
         cudaError_t err = cudaPeekAtLastError();
         if (err != cudaSuccess) {
             std::cerr << "CUDA kernel launch failed: " << cudaGetErrorString(err) << std::endl;
         }
-
-        CUDACHECK(cudaMemcpyAsync(container.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream));
-
-        CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaStreamDestroy(stream));
-
-        //CUDACHECK(cudaFree(d_array));
+   
+        if constexpr (sync_host) {
+            std::cout << "syncing device to host" << std::endl;
+            if (container.host_pinned_data == nullptr || container.device_data == nullptr) {
+                std::cerr << "ERROR: rafa::vector has no host_pinned_data or device_data allocated!" << std::endl;
+            }
+            container.sync_device_to_host();  // Only applies to rafa::vector
+        } else {
+            std::cout << "not syncing device to host" << std::endl;
+        }
+   
+        if constexpr (!is_rafa_vector<Container>::value) {
+            std::cout << "non-rafa cleanup" << std::endl;
+            // Copy back to user memory
+            cudaMemcpyAsync(container.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
+            cudaStreamSynchronize(stream);
+            cudaFree(d_array);
+            cudaStreamDestroy(stream);
+        }
+        std::cout << "map_impl ends" << std::endl;
     }
 
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_impl(Container& input, Func func, Container& output, Args... args) {
+        std::cout << "\nmap_impl with 1 input + output\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = input.size();
         size_t bytes = size * sizeof(T);
@@ -84,9 +134,10 @@ namespace rafa {
     }
 
     
-
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_impl(Container& input1, Container& input2, Func func, Args... args) {
+        std::cout << "\nmap_impl with 2 inputs\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = input1.size();
         size_t bytes = size * sizeof(T);
@@ -116,8 +167,10 @@ namespace rafa {
         cudaFree(d_array2);
     }
 
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_impl(Container& input1, Container& input2, Func func, Container& output, Args... args) {
+        std::cout << "\nmap_impl with 2 inputs + output\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = input1.size();
         size_t bytes = size * sizeof(T);
@@ -154,9 +207,9 @@ namespace rafa {
         // CUDACHECK(cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream));
         // CUDACHECK(cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream));
     
-        device_print<<<numBlocks, blockSize, 0>>>(d_array, size);
-        device_print<<<numBlocks, blockSize, 0>>>(d_array2, size);
-        device_print<<<numBlocks, blockSize, 0>>>(d_output, size);
+        //device_print<<<numBlocks, blockSize, 0>>>(d_array, size);
+        //device_print<<<numBlocks, blockSize, 0>>>(d_array2, size);
+        //device_print<<<numBlocks, blockSize, 0>>>(d_output, size);
     
         mapKernel2inputsOut<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, d_output, args...);
     
@@ -171,43 +224,45 @@ namespace rafa {
     }
 
 
-
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container, Func func, Args... args) {
         #pragma message("map with 1 input")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container.sync_host_to_device();
         }
-        return map_impl(container, func, args...);
+        return map_impl<sync_host,sync_device>(container, func, args...);
     }
  
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container, Func func, Container& output, Args... args) {
         #pragma message("map with output")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container.sync_host_to_device();
         }
-        return map_impl(container, func, output, args...); 
+        return map_impl<sync_host,sync_device>(container, func, output, args...); 
     }
 
-    template <VectorLike Container, typename Func, typename... Args>
+    
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container1, Container& container2, Func func, Args... args) {
         #pragma message("map with 2 inputs")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container1.sync_host_to_device();
             container2.sync_host_to_device();
         }
-        return map_impl(container1,container2, func, args...);
+        return map_impl<sync_host,sync_device>(container1,container2, func, args...);
     }
 
-    template <VectorLike Container, typename Func, typename... Args>
+    template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container1,Container& container2, Func func, Container& output, Args... args) {
         #pragma message("map with 2 inputs and output")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container1.sync_host_to_device();
             container2.sync_host_to_device();
         }
-        return map_impl(container1,container2, func, output, args...); 
+        return map_impl<sync_host,sync_device>(container1,container2, func, output, args...); 
     } 
     
     //}

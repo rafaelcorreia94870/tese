@@ -14,15 +14,15 @@ namespace rafa {
     public:
         std::string skeletonType;
         std::vector<Container*> inputs;
-        const Container* output;
+        Container* output;
         Function kernel;
         std::tuple<Args...> extraArgs;
 
         //output, no args
         SkeletonObject(const std::string& skeletonType,
-            const std::vector<Container*>& inputs,
+            std::vector<Container*> inputs,
             const Function& kernel,
-            const Container& output)
+            Container& output)
         : skeletonType(skeletonType),
         inputs(inputs),
         output(&output),
@@ -32,7 +32,7 @@ namespace rafa {
 
         //no output, no args
         SkeletonObject(const std::string& skeletonType,
-            const std::vector<Container*>& inputs,
+            std::vector<Container*> inputs,
             const Function& kernel)
         : skeletonType(skeletonType),
         inputs(inputs),
@@ -43,9 +43,9 @@ namespace rafa {
         
         //output, args
         SkeletonObject(const std::string& skeletonType,
-            const std::vector<Container*>& inputs,
+            std::vector<Container*>& inputs,
             const Function& kernel,
-            const Container& output,
+            Container& output,
             const std::tuple<Args...>& args)
         : skeletonType(skeletonType),
         inputs(inputs),
@@ -56,7 +56,7 @@ namespace rafa {
         
         //no output, args
         SkeletonObject(const std::string& skeletonType,
-            const std::vector<Container*>& inputs,
+            std::vector<Container*>& inputs,
             const Function& kernel,
             const std::tuple<Args...>& args)
         : skeletonType(skeletonType),
@@ -89,6 +89,7 @@ namespace rafa {
         // Getters
 
         std::string getSkeletonType() const override { return skeletonType; }
+        std::vector<Container*>& getInputs() const { return inputs; }
         /* std::string getSkeletonType() const override { return skeletonType;}        
         std::vector<Container*>& getInputs() const override { return inputs; }
         Container* getOutput() const override { return output; }
@@ -103,73 +104,123 @@ namespace rafa {
 
         // Setters
         void setType(const std::string& type) { skeletonType = type; }
-        void setInputs(const std::vector<Container*>& in) { inputs = in; }
-        void setOutput(const Container& out) { output = &out; }
+        void setInputs(std::vector<Container*>& in) { inputs = in; }
+        void setOutput(Container& out) { output = &out; }
         void setKernel(const Function& k) { kernel = k; }
         void setExtraArgs(const std::tuple<Args...>& args) { extraArgs = args; }
+            
 
+        void overrideDeviceInput(void* device_ptr) override {
+            
+            using T = typename Container::value_type;
+    
+            T* typed_device_ptr = static_cast<T*>(device_ptr);
+    
+            inputs[0]->set_device_data(typed_device_ptr);
+            
+            std::cout << "Overriding device input with pointer: " << device_ptr << std::endl;
+        }
+
+        void* getDeviceOutputPtr() const override {
+            std::cout << "Calling getDeviceOutputPtr. Output is: " << output << std::endl;
+            if (!output) {
+                std::cerr << "Output is nullptr! Using first Input\n";
+                return inputs[0]->device_data;
+            }
+            std::cout << "Device data pointer: " << output->device_data << std::endl;
+            return static_cast<void*>(output->device_data);
+        }
+
+        // Modify to directly use Container's device pointer handling methods
+        void setDevicePointer(void* ptr) {
+            // Set device pointer on the container itself (if applicable)
+            if (output) {
+                output->setDevicePointer(ptr);
+            }
+        }
+
+        void* getDevicePointer() const {
+            return output ? output->getDevicePointer() : nullptr; // Return the device pointer of output
+        }
+
+        template <bool sync_host, bool sync_device>
         void dispatch_unary(std::vector<Container*>& inputs,
                             const Function& kernel,
-                            const Container* output,
+                            Container* output,
                             const std::tuple<Args...>& extraArgs) {
             if constexpr (sizeof...(Args) == 0) {
                 if (output)
-                    map_logic(*inputs[0], kernel, *output);
+                    map_logic<sync_host, sync_device>(*inputs[0], kernel, *output);
                 else
-                    map_logic(*inputs[0], kernel);
+                    map_logic<sync_host, sync_device>(*inputs[0], kernel);
             } else {
                 if (output)
-                    map_logic(*inputs[0], kernel, *output, extraArgs);
+                    map_logic<sync_host, sync_device>(*inputs[0], kernel, *output, extraArgs);
                 else
-                    map_logic(*inputs[0], kernel, extraArgs);
+                    map_logic<sync_host, sync_device>(*inputs[0], kernel, extraArgs);
             }
         }
 
+        template <bool sync_host, bool sync_device>
         void dispatch_binary(std::vector<Container*>& inputs,
-                             const Function& kernel,
-                             const Container* output,
-                             const std::tuple<Args...>& extraArgs) {
+                            const Function& kernel,
+                            Container* output,
+                            const std::tuple<Args...>& extraArgs) {
             if constexpr (sizeof...(Args) == 0) {
                 if (output)
-                    map_logic(*inputs[0], *inputs[1], kernel, *output);
+                    map_logic<sync_host, sync_device, Container, Function, Args...>(*inputs[0], *inputs[1], kernel, *output);
                 else
-                    map_logic(*inputs[0], *inputs[1], kernel);
+                    map_logic<sync_host, sync_device, Container, Function, Args...>(*inputs[0], *inputs[1], kernel);
             } else {
                 if (output)
-                    map_logic(*inputs[0], *inputs[1], kernel, *output, extraArgs);
+                    map_logic<sync_host, sync_device, Container, Function, Args...>(*inputs[0], *inputs[1], kernel, *output, extraArgs);
                 else
-                    map_logic(*inputs[0], *inputs[1], kernel, extraArgs);
+                    map_logic<sync_host, sync_device, Container, Function, Args...>(*inputs[0], *inputs[1], kernel, extraArgs);
             }
         }
 
-        void execute() override {
+        void executeSyncAll() {
+            execute<true, true>();
+        }
 
+        void executeAsyncAll() {
+            execute<false, false>();
+        }
+
+        void executeSyncHost() {
+            execute<true, false>();
+        }
+
+        void executeSyncDevice() {
+            execute<false, true>();
+        }
+
+        template <bool sync_host, bool sync_device>
+        void execute() {
             using namespace rafa;
-            //return map(*inputs[0], kernel);
             int n_inputs = inputs.size();
             std::cout << "Number of inputs: " << n_inputs << std::endl;
             std::cout << "Output pointer is " << output << std::endl;
-            //map_logic(*inputs[0], kernel);
             std::cout << "size of args: " << sizeof...(Args) << std::endl;
             using T = typename Container::value_type;
-
+        
             if (n_inputs == 1) {
                 if constexpr (is_unary_kernel<Function, T>::value) {
-                    dispatch_unary(inputs, kernel, output, extraArgs);
+                    dispatch_unary<sync_host, sync_device>(inputs, kernel, output, extraArgs);
                 } else {
                     throw std::runtime_error("Kernel is not unary, but only one input provided");
                 }
             } else if (n_inputs == 2) {
                 if constexpr (is_binary_kernel<Function, T>::value) {
-                    dispatch_binary(inputs, kernel, output, extraArgs);
+                    dispatch_binary<sync_host, sync_device>(inputs, kernel, output, extraArgs);
                 } else {
                     throw std::runtime_error("Kernel is not binary, but two inputs provided");
                 }
             } else {
                 throw std::runtime_error("Invalid number of inputs");
             }
-        
         }
+        
             
         
         template<typename F, typename T>
