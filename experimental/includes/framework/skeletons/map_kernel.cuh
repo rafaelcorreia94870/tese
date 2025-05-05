@@ -6,7 +6,7 @@ template <typename T, typename Func, typename... Args>
 __global__ void mapKernel(T* d_array, int size, Func func, Args... args) {
     int idx = blockIdx.x * blockDim.x + threadIdx.x;
     if (idx < size) {
-        printf("Running kernel idx = %d, d_array = %d\n", idx, d_array[idx]);
+        //printf("Running kernel idx = %d, d_array = %d\n", idx, d_array[idx]);
         //printf("func: %p\n", func);
         //printf("d_array[%zu]: %i\n", idx, d_array[idx]);
         d_array[idx] = func(d_array[idx], args...);

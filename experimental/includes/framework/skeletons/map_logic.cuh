@@ -24,23 +24,19 @@ namespace rafa {
             stream = container.stream;
         
             if constexpr (sync_device) {
-                std::cout << "syncing host to device" << std::endl;
                 container.sync_host_to_device();
             }
         
+            
+            if (container.device_data == nullptr) {
+                std::cout << "d_array is null, allocating device memory" << std::endl;
+                CUDACHECK(cudaMalloc(&container.device_data, bytes));
+            }
             d_array = container.device_data;
-        
-            if (d_array == nullptr) {
-                std::cout << "Device data is null. Allocating..." << std::endl;
-                cudaMalloc(&container.device_data, bytes);
-                d_array = container.device_data;
-            }
-            else {
-                std::cout << "Device pointer :" << d_array << std::endl;
-            }
+
    
         } else {
-                std::cout << "non-rafa vector, allocate device + pinned host copy" << std::endl;
+                //std::cout << "non-rafa vector, allocate device + pinned host copy" << std::endl;
                 T* pinned_host = nullptr;
             
                 cudaStreamCreate(&stream);
@@ -68,33 +64,28 @@ namespace rafa {
         
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func);
         CUDACHECK(cudaStreamSynchronize(stream));
+        CUDACHECK(cudaPeekAtLastError());
         device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
-        
-   
-        cudaError_t err = cudaPeekAtLastError();
-        if (err != cudaSuccess) {
-            std::cerr << "CUDA kernel launch failed: " << cudaGetErrorString(err) << std::endl;
-        }
-   
         if constexpr (sync_host) {
-            std::cout << "syncing device to host" << std::endl;
+            //std::cout << "syncing device to host" << std::endl;
             if (container.host_pinned_data == nullptr || container.device_data == nullptr) {
                 std::cerr << "ERROR: rafa::vector has no host_pinned_data or device_data allocated!" << std::endl;
             }
             container.sync_device_to_host();  // Only applies to rafa::vector
         } else {
-            std::cout << "not syncing device to host" << std::endl;
+            //std::cout << "not syncing device to host" << std::endl;
         }
    
         if constexpr (!is_rafa_vector<Container>::value) {
-            std::cout << "non-rafa cleanup" << std::endl;
-            // Copy back to user memory
             cudaMemcpyAsync(container.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
             cudaStreamSynchronize(stream);
             cudaFree(d_array);
             cudaStreamDestroy(stream);
+        }else{
+            cudaStreamSynchronize(stream);
         }
-        std::cout << "map_impl ends" << std::endl;
+        std::cout << "container.device_data: ";
+        device_print<<<numBlocks, blockSize, 0, stream>>>(container.device_data, size);
     }
 
     
@@ -105,32 +96,54 @@ namespace rafa {
         size_t size = input.size();
         size_t bytes = size * sizeof(T);
 
-        T* d_array = output.device_data;
-        if (d_array == nullptr) {
-            cudaHostAlloc(reinterpret_cast<void**>(&d_array), bytes, cudaHostAllocDefault);
-        }
+        T* d_array;
 
         cudaStream_t stream;
-        cudaStreamCreate(&stream);
 
-        cudaMemcpyAsync(d_array, input.data(), bytes, cudaMemcpyHostToDevice, stream);
+        if constexpr (is_rafa_vector<Container>::value) {
+            stream = input.stream;
+
+            if constexpr (sync_device) {
+                input.sync_host_to_device();
+            }
+
+            d_array = input.device_data;
+            if (d_array == nullptr) {
+                CUDACHECK(cudaMalloc(&input.device_data, bytes));
+                d_array = input.device_data;
+            }
+        } else {
+            cudaStreamCreate(&stream);
+            if (d_array == nullptr) {
+                CUDACHECK(cudaMalloc(d_array, bytes));
+            }
+            
+            CUDACHECK(cudaMemcpyAsync(d_array, input.data(), bytes, cudaMemcpyHostToDevice, stream));
+        }
 
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
 
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func, args...);
-        
-        std::cout << "cudaStreamSynchronize begins" << std::endl;
-        cudaStreamSynchronize(stream);
-        std::cout << "cudaStreamSynchronize ends" << std::endl;
-        cudaMemcpy(output.data(), d_array, bytes, cudaMemcpyDeviceToHost);
-        std::cout << "device data: " << d_array << std::endl;
-        std::cout << "output data: " << output.device_data << std::endl;
-        device_print<<<numBlocks, blockSize, 0>>>(output.device_data, size);
+        CUDACHECK(cudaStreamSynchronize(stream));
+        CUDACHECK(cudaPeekAtLastError());
 
-        cudaStreamDestroy(stream);
-        //cudaFree(d_array);
 
+        if constexpr (!is_rafa_vector<Container>::value){
+            cudaMemcpyAsync(output.data(), d_array, bytes, cudaMemcpyDeviceToHost,stream);
+            cudaFree(d_array);
+            cudaStreamDestroy(stream);
+        } else {
+            if constexpr (sync_host) {
+                std::cout << "syncing device to host" << std::endl;
+                output.sync_device_to_host();
+            }
+            //std::cout << "output.device_data: " << output.device_data << std::endl;
+            //device_print<<<numBlocks, blockSize, 0, stream>>>(output.device_data, size);
+            cudaStreamSynchronize(stream);
+
+            
+        }
     }
 
     
@@ -144,27 +157,55 @@ namespace rafa {
 
         T* d_array;
         T* d_array2;
-        cudaMalloc(&d_array, bytes);
-        cudaMalloc(&d_array2, bytes);
-
         cudaStream_t stream;
-        cudaStreamCreate(&stream);
 
-        cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream);
-        cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream);
+
+        if constexpr (is_rafa_vector<Container>::value) {
+            d_array = input1.device_data;
+            d_array2 = input2.device_data;
+            stream = input1.stream;
+            if constexpr (sync_device) {
+                std::cout << "syncing device to host" << std::endl;
+                input1.sync_host_to_device();
+                input2.sync_host_to_device();
+            }
+            if (d_array == nullptr) {
+                CUDACHECK(cudaMalloc(&input1.device_data, bytes));
+                d_array = input1.device_data;
+            }
+            if (d_array2 == nullptr) {
+                CUDACHECK(cudaMalloc(&input2.device_data, bytes));
+                d_array2 = input2.device_data;
+            }
+        } else {
+            cudaStreamCreate(&stream);
+            CUDACHECK(cudaMalloc(&d_array, bytes));
+            CUDACHECK(cudaMalloc(&d_array2, bytes));
+            cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream);
+            cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream);   
+        }
 
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
 
         mapKernel2inputs<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, args...);
+        CUDACHECK(cudaStreamSynchronize(stream));
+        CUDACHECK(cudaPeekAtLastError());
 
-        cudaStreamSynchronize(stream);
-        cudaMemcpyAsync(input1.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
+        if constexpr (sync_host) {
+            input1.sync_device_to_host();
+        }
 
-        cudaStreamDestroy(stream);
-
-        cudaFree(d_array);
-        cudaFree(d_array2);
+        
+        if constexpr (!is_rafa_vector<Container>::value) {
+            cudaMemcpyAsync(input1.data(), d_array, bytes, cudaMemcpyDeviceToHost, stream);
+            cudaStreamSynchronize(stream);
+            cudaFree(d_array);
+            cudaFree(d_array2);
+            cudaStreamDestroy(stream);
+        } else {
+            cudaStreamSynchronize(stream);
+        }
     }
 
     
@@ -174,53 +215,66 @@ namespace rafa {
         using T = typename Container::value_type;
         size_t size = input1.size();
         size_t bytes = size * sizeof(T);
-        std::cout << "2 inputs 1 output" << std::endl;
         cudaStream_t stream;
-        CUDACHECK(cudaStreamCreate(&stream));
-        // Ensure device data is allocated BEFORE accessing
-        if (input1.device_data == nullptr) {
-            std::cout << "Allocating device memory for input1 in map_impl" << std::endl;
-            CUDACHECK(cudaMalloc(&input1.device_data, bytes));
-            CUDACHECK(cudaMemcpyAsync(input1.device_data, input1.data(), bytes, cudaMemcpyHostToDevice, stream));
+        T* d_array, *d_array2, *d_output;
+
+
+        if constexpr (is_rafa_vector<Container>::value) {
+            if constexpr (sync_device) {
+                input1.sync_host_to_device();
+                input2.sync_host_to_device();
+            }
+            stream = input1.stream;
+            d_array = input1.device_data;
+            d_array2 = input2.device_data;
+            d_output = output.device_data;
+            if (d_array == nullptr) {
+                CUDACHECK(cudaMalloc(&input1.device_data, bytes));
+            }
+            if (d_array2 == nullptr) {
+                CUDACHECK(cudaMalloc(&input2.device_data, bytes));
+            }
+            if (d_output == nullptr) {
+                CUDACHECK(cudaMalloc(&output.device_data, bytes));
+            }
+        } else {
+            cudaStreamCreate(&stream);
+            cudaMalloc(&d_array, bytes);
+            cudaMalloc(&d_array2, bytes);
+            cudaMalloc(&d_output, bytes);
+            cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream);
+            cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream);   
         }
-        T* d_array = input1.device_data;
-    
-        if (input2.device_data == nullptr) {
-            std::cout << "Allocating device memory for input2 in map_impl" << std::endl;
-            CUDACHECK(cudaMalloc(&input2.device_data, bytes));
-            CUDACHECK(cudaMemcpyAsync(input2.device_data, input2.data(), bytes, cudaMemcpyHostToDevice, stream));
-        }
-        T* d_array2 = input2.device_data;
-    
-        if (output.device_data == nullptr) {
-            std::cout << "Allocating device memory for output in map_impl" << std::endl;
-            CUDACHECK(cudaMalloc(&output.device_data, bytes));
-        }
-        T* d_output = output.device_data;
     
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
-    
         
-    
-        // The initial copies might be redundant if sync_host_to_device was called
-        // CUDACHECK(cudaMemcpyAsync(d_array, input1.data(), bytes, cudaMemcpyHostToDevice, stream));
-        // CUDACHECK(cudaMemcpyAsync(d_array2, input2.data(), bytes, cudaMemcpyHostToDevice, stream));
-    
-        //device_print<<<numBlocks, blockSize, 0>>>(d_array, size);
-        //device_print<<<numBlocks, blockSize, 0>>>(d_array2, size);
-        //device_print<<<numBlocks, blockSize, 0>>>(d_output, size);
-    
+        /* std::cout << "Device ptr (input): " << input1.device_data << " | Output: " << output.device_data << std::endl;
+        cudaPointerAttributes attr;
+        cudaPointerGetAttributes(&attr, input1.device_data);
+        std::cout << "Pointer type: " << attr.type << " | Device: " << attr.device << std::endl; */
+        cudaStreamSynchronize(stream);
+        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        cudaStreamSynchronize(stream);
         mapKernel2inputsOut<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, d_output, args...);
-    
         CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaMemcpyAsync(output.data(), d_output, bytes, cudaMemcpyDeviceToHost, stream));
-    
-        CUDACHECK(cudaStreamDestroy(stream));
-    
-        // You might want to handle freeing device memory in the rafa::vector destructor or a specific cleanup function
-        // cudaFree(d_array);
-        // cudaFree(d_array2);
+        CUDACHECK(cudaPeekAtLastError());
+        if constexpr (sync_host) {
+            std::cout << "syncing device to host" << std::endl;
+            output.sync_device_to_host();
+            cudaStreamSynchronize(stream);
+        }
+
+        if constexpr (!is_rafa_vector<Container>::value) {
+            CUDACHECK(cudaMemcpyAsync(output.data(), d_output, bytes, cudaMemcpyDeviceToHost, stream));
+            CUDACHECK(cudaStreamSynchronize(stream));
+            cudaFree(d_array);
+            cudaFree(d_array2);
+            cudaFree(d_output);
+            CUDACHECK(cudaStreamDestroy(stream));
+        } else {
+            cudaStreamSynchronize(stream);
+        }
     }
 
 

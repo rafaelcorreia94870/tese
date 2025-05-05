@@ -69,11 +69,11 @@ namespace rafa {
             std::cout << "\nSkeleton Type: " << skeletonType << "\n";
             std::cout << "Inputs sizes: ";
             for (const auto& input : inputs) {
-            std::cout << input->size() << " ";
+            std::cout << input->size() << " , pointer: " << input->device_data << " | ";
             }
             std::cout << "\n";
             if (output) {
-            std::cout << "Output sizes: " << output->size() << "\n";
+            std::cout << "Output sizes: " << output->size() << " ,pointer: " << output->device_data <<"\n";
             } else {
             std::cout << "Output: nullptr" << "\n";
             }
@@ -85,7 +85,9 @@ namespace rafa {
             std::cout << "\n\n";
         }
         
-        
+        void printInput() const {
+            inputs[0]->print();
+        }
         // Getters
 
         std::string getSkeletonType() const override { return skeletonType; }
@@ -115,27 +117,29 @@ namespace rafa {
             using T = typename Container::value_type;
     
             T* typed_device_ptr = static_cast<T*>(device_ptr);
-    
+            
+            std::cout << "input before override: " << inputs[0]->device_data << std::endl;
+            std::cout << "typed_device_ptr: " << typed_device_ptr << std::endl;
             inputs[0]->set_device_data(typed_device_ptr);
             
-            std::cout << "Overriding device input with pointer: " << device_ptr << std::endl;
+            //std::cout << "Overriding device input with pointer: " << device_ptr << std::endl;
         }
 
         void* getDeviceOutputPtr() const override {
-            std::cout << "Calling getDeviceOutputPtr. Output is: " << output << std::endl;
+            //std::cout << "Calling getDeviceOutputPtr. Output is: " << output << std::endl;
             if (!output) {
                 std::cerr << "Output is nullptr! Using first Input\n";
                 return inputs[0]->device_data;
             }
             std::cout << "Device data pointer: " << output->device_data << std::endl;
-            return static_cast<void*>(output->device_data);
+            return output->device_data;
         }
 
         // Modify to directly use Container's device pointer handling methods
         void setDevicePointer(void* ptr) {
             // Set device pointer on the container itself (if applicable)
             if (output) {
-                output->setDevicePointer(ptr);
+                output->set_device_data(ptr);
             }
         }
 
@@ -199,9 +203,9 @@ namespace rafa {
         void execute() {
             using namespace rafa;
             int n_inputs = inputs.size();
-            std::cout << "Number of inputs: " << n_inputs << std::endl;
-            std::cout << "Output pointer is " << output << std::endl;
-            std::cout << "size of args: " << sizeof...(Args) << std::endl;
+            //std::cout << "Number of inputs: " << n_inputs << std::endl;
+            //std::cout << "Output pointer is " << output << std::endl;
+            //std::cout << "size of args: " << sizeof...(Args) << std::endl;
             using T = typename Container::value_type;
         
             if (n_inputs == 1) {

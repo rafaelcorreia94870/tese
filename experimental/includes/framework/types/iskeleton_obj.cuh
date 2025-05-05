@@ -15,6 +15,7 @@ namespace rafa {
             virtual void executeSyncDevice() = 0;
             virtual void overrideDeviceInput(void* device_ptr) = 0;
             virtual void* getDeviceOutputPtr() const = 0;
+            virtual void printInput() const = 0;
 
 
             virtual ~ISkeletonObject() = default;

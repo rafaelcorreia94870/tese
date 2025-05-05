@@ -6,7 +6,7 @@
 inline void gpuAssert(cudaError_t code, const char *file, int line) {
     if (code != cudaSuccess) {
         fprintf(stderr, "CUDA Error: %s %s %d\n", cudaGetErrorString(code), file, line);
-        exit(code);
+        //exit(code);
     }
 }
 #include "map_logic.cuh"
