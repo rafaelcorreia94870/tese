@@ -123,10 +123,13 @@ namespace rafa {
 
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
-
+        std::cout << "d_array before: " << d_array << std::endl;
+        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func, args...);
         CUDACHECK(cudaStreamSynchronize(stream));
         CUDACHECK(cudaPeekAtLastError());
+        std::cout << "d_array after: " << d_array << std::endl;
+        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
 
 
         if constexpr (!is_rafa_vector<Container>::value){
@@ -134,6 +137,7 @@ namespace rafa {
             cudaFree(d_array);
             cudaStreamDestroy(stream);
         } else {
+            output.device_data = d_array;
             if constexpr (sync_host) {
                 std::cout << "syncing device to host" << std::endl;
                 output.sync_device_to_host();
@@ -218,6 +222,8 @@ namespace rafa {
         cudaStream_t stream;
         T* d_array, *d_array2, *d_output;
 
+        std::cout << "input1.device_data: " << input1.device_data << std::endl;
+        device_print<<<1, 1>>>(input1.device_data, size);
 
         if constexpr (is_rafa_vector<Container>::value) {
             if constexpr (sync_device) {
@@ -254,9 +260,14 @@ namespace rafa {
         cudaPointerGetAttributes(&attr, input1.device_data);
         std::cout << "Pointer type: " << attr.type << " | Device: " << attr.device << std::endl; */
         cudaStreamSynchronize(stream);
+        std::cout << "d_array: " << d_array << std::endl;
         device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
         cudaStreamSynchronize(stream);
         mapKernel2inputsOut<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, d_output, args...);
+        
+        std::cout << "d_output: " << d_output << std::endl;
+        device_print<<<numBlocks, blockSize, 0, stream>>>(d_output, size);
+
         CUDACHECK(cudaStreamSynchronize(stream));
         CUDACHECK(cudaPeekAtLastError());
         if constexpr (sync_host) {
@@ -281,41 +292,41 @@ namespace rafa {
     
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container, Func func, Args... args) {
-        #pragma message("map with 1 input")
+        /* #pragma message("map with 1 input")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container.sync_host_to_device();
-        }
+        } */
         return map_impl<sync_host,sync_device>(container, func, args...);
     }
  
     
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container, Func func, Container& output, Args... args) {
-        #pragma message("map with output")
+        /* #pragma message("map with output")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container.sync_host_to_device();
-        }
+        } */
         return map_impl<sync_host,sync_device>(container, func, output, args...); 
     }
 
     
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container1, Container& container2, Func func, Args... args) {
-        #pragma message("map with 2 inputs")
+        /* #pragma message("map with 2 inputs")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container1.sync_host_to_device();
             container2.sync_host_to_device();
-        }
+        } */
         return map_impl<sync_host,sync_device>(container1,container2, func, args...);
     }
 
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_logic(Container& container1,Container& container2, Func func, Container& output, Args... args) {
-        #pragma message("map with 2 inputs and output")
+        /* #pragma message("map with 2 inputs and output")
         if constexpr(std::is_same_v<Container, rafa::vector<typename Container::value_type>>) {
             container1.sync_host_to_device();
             container2.sync_host_to_device();
-        }
+        } */
         return map_impl<sync_host,sync_device>(container1,container2, func, output, args...); 
     } 
     

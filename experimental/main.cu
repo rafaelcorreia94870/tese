@@ -23,7 +23,7 @@ struct AddAndShift {
 };
 
 int main() {
- /* 
+ 
     std::cout << "Test 1: Basic vector initialization and data synchronization\n";
     rafa::vector<int> vec(5);
     for (int i = 0; i < 5; ++i) {
@@ -120,23 +120,7 @@ int main() {
     std::cout << "Vector after multiple map (double_it, add): ";
     result3.print();
     std::cout << "Espected result: [20, 24, 28, 32, 36]\n\n\n";
-    ////////////////////////////////////////////////////////////////////////// */
-    rafa::vector<int> input_blucas(5,5);
-    rafa::vector<int> input_blucas2(5,7);
-    rafa::vector<int> output_muamua(5);
-    std::cout << "input_blucas device pointer: " << input_blucas.device_data << "\n";
-    std::cout << "input_blucas2 device pointer: " << input_blucas2.device_data << "\n";
-    std::cout << "output_muamua device pointer: " << output_muamua.device_data << "\n";
-    //input_blucas.smart_map(DoubleIt()).smart_map(DoubleIt(), output_muamua).smart_map(DoubleIt()).execute();
-    //input_blucas.smart_map(DoubleIt()).smart_map(DoubleIt(), output_muamua).execute();
-    //input_blucas.print();
-    input_blucas.smart_map(DoubleIt(), output_muamua).smart_map(input_blucas2, Add()).execute();
-
-//    input_blucas.smart_map(DoubleIt()).smart_map(input_blucas2, Add(), output_muamua).execute();
-    //input_blucas.smart_map(DoubleIt()).smart_map(input_blucas2, Add()).execute();
-    input_blucas.print();
-    output_muamua.sync_device_to_host();
-    output_muamua.print();
+    //////////////////////////////////////////////////////////////////////////
 
     return 0;
 }
