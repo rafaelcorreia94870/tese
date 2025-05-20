@@ -103,7 +103,7 @@ int main() {
     std::cout << "Output after composed kernel: ";
     printVector(output_float3);
 
-    // Test with SecondFail - this should fail but it doesn't
+    // Test with SecondFail - this should fail but it doesn't (compatible types?)
     std::vector<int> input3(8);
     for (int i = 0; i < 8; ++i) {
         input3[i] = i;
