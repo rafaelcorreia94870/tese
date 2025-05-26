@@ -2,6 +2,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #include <iomanip>
+#include <cmath>
 
 void checkCudaError(cudaError_t err, const char* msg) {
     if (err != cudaSuccess) {
@@ -10,125 +11,225 @@ void checkCudaError(cudaError_t err, const char* msg) {
     }
 }
 
-void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
-    std::cout << "N,Repetition,Pinned Async (ns),Pinned Sync (ns),Pageable Async (ns),Pageable Sync (ns)" << std::endl;
-
-    for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
-        const size_t bytes = N * sizeof(float);
-
-        float* hostPageableMemory = (float*)malloc(bytes);
-        float* hostPinnedMemory;
-        cudaMallocHost((void**)&hostPinnedMemory, bytes);
-        float* deviceMemory;
-        cudaMalloc((void**)&deviceMemory, bytes);
-
-        for (size_t i = 0; i < N; ++i) {
-            hostPageableMemory[i] = static_cast<float>(i);
-            hostPinnedMemory[i] = static_cast<float>(i);
+struct IntensiveComputation {
+    __device__ float operator()(float x) const {
+        for (int i = 0; i < 100; ++i) {
+            x = sinf(x) * cosf(x) + logf(x + 1.0f);
         }
-
-        for (int warmup = 0; warmup < 3; ++warmup) {
-            cudaMemcpy(deviceMemory, hostPageableMemory, bytes, cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
-            cudaMemcpy(hostPageableMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            cudaMemcpy(deviceMemory, hostPinnedMemory, bytes, cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
-            cudaMemcpy(hostPinnedMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-        }
-
-        for (size_t repeat = 0; repeat < NUMB_REPEAT; ++repeat) {
-            cudaStream_t stream;
-            cudaStreamCreate(&stream);
-
-            auto start = std::chrono::high_resolution_clock::now();
-            cudaMemcpyAsync(deviceMemory, hostPinnedMemory, bytes, cudaMemcpyHostToDevice, stream);
-            cudaMemcpyAsync(hostPinnedMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost, stream);
-            cudaStreamSynchronize(stream);
-            auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pinnedAsyncTime = end - start;
-
-            start = std::chrono::high_resolution_clock::now();
-            cudaMemcpy(deviceMemory, hostPinnedMemory, bytes, cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
-            cudaMemcpy(hostPinnedMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pinnedSyncTime = end - start;
-
-            start = std::chrono::high_resolution_clock::now();
-            cudaMemcpyAsync(deviceMemory, hostPageableMemory, bytes, cudaMemcpyHostToDevice, stream);
-            cudaMemcpyAsync(hostPageableMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost, stream);
-            cudaStreamSynchronize(stream);
-            end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pageableAsyncTime = end - start;
-
-            start = std::chrono::high_resolution_clock::now();
-            cudaMemcpy(deviceMemory, hostPageableMemory, bytes, cudaMemcpyHostToDevice);
-            cudaDeviceSynchronize();
-            cudaMemcpy(hostPageableMemory, deviceMemory, bytes, cudaMemcpyDeviceToHost);
-            cudaDeviceSynchronize();
-            end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pageableSyncTime = end - start;
-
-            std::cout << N << "," << repeat << ","
-                      << std::fixed << std::setprecision(0)
-                      << pinnedAsyncTime.count() << ","
-                      << pinnedSyncTime.count() << ","
-                      << pageableAsyncTime.count() << ","
-                      << pageableSyncTime.count() << std::endl;
-
-            cudaStreamDestroy(stream);
-        }
-
-        free(hostPageableMemory);
-        cudaFreeHost(hostPinnedMemory);
-        cudaFree(deviceMemory);
+        return x;
     }
+};
+
+__global__ void computeKernel(float* data, size_t N) {
+    IntensiveComputation op;
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) {
+        data[idx] = op(data[idx]);
+    }
+}
+
+void runWarmup(size_t N) {
+    const size_t bytes = N * sizeof(float);
+    float* hostPageable = (float*)malloc(bytes);
+    float* hostPinned;
+    cudaMallocHost((void**)&hostPinned, bytes);
+    float* device;
+    cudaMalloc((void**)&device, bytes);
+    float* managed;
+    cudaMallocManaged(&managed, bytes);
+
+    for (size_t i = 0; i < N; ++i) {
+        hostPageable[i] = i;
+        hostPinned[i] = i;
+        managed[i] = i;
+    }
+
+    for (int i = 0; i < 3; ++i) {
+        cudaMemcpy(device, hostPageable, bytes, cudaMemcpyHostToDevice);
+        cudaMemcpy(hostPageable, device, bytes, cudaMemcpyDeviceToHost);
+        cudaMemcpy(device, hostPinned, bytes, cudaMemcpyHostToDevice);
+        cudaMemcpy(hostPinned, device, bytes, cudaMemcpyDeviceToHost);
+        computeKernel<<<(N + 255) / 256, 256>>>(managed, N);
+        cudaDeviceSynchronize();
+    }
+
+    free(hostPageable);
+    cudaFreeHost(hostPinned);
+    cudaFree(device);
+    cudaFree(managed);
 }
 
 void benchmarkMemoryInitialization(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
-    std::cout << "N,Repetition,Pinned Init (ns),Pageable Init (ns)" << std::endl;
+    std::cout << "N,Repetition,Pinned Init (ns),Pageable Init (ns),Managed Init (ns)" << std::endl;
+
+    for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
+        const size_t bytes = N * sizeof(float);
+        for (size_t repeat = 0; repeat < NUMB_REPEAT; ++repeat) {
+            auto start = std::chrono::high_resolution_clock::now();
+            float* pinned;
+            cudaMallocHost((void**)&pinned, bytes);
+            for (size_t i = 0; i < N; ++i) pinned[i] = i;
+            auto end = std::chrono::high_resolution_clock::now();
+            auto pinnedInit = end - start;
+            cudaFreeHost(pinned);
+
+            start = std::chrono::high_resolution_clock::now();
+            float* pageable = (float*)malloc(bytes);
+            for (size_t i = 0; i < N; ++i) pageable[i] = i;
+            end = std::chrono::high_resolution_clock::now();
+            auto pageableInit = end - start;
+            free(pageable);
+
+            start = std::chrono::high_resolution_clock::now();
+            float* managed;
+            cudaMallocManaged(&managed, bytes);
+            for (size_t i = 0; i < N; ++i) managed[i] = i;
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            auto managedInit = end - start;
+            cudaFree(managed);
+
+            std::cout << N << "," << repeat << ","
+                      << std::fixed << std::setprecision(0)
+                      << pinnedInit.count() << ","
+                      << pageableInit.count() << ","
+                      << managedInit.count() << std::endl;
+        }
+    }
+}
+
+void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
+    std::cout << "N,Repetition,Pinned Transfer (ns),Pageable Transfer (ns),Managed Kernel (ns),Managed Prefetch+Kernel (ns)" << std::endl;
+
+    for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
+        const size_t bytes = N * sizeof(float);
+
+        float* pinned;
+        cudaMallocHost((void**)&pinned, bytes);
+        float* pageable = (float*)malloc(bytes);
+        float* managed;
+        cudaMallocManaged(&managed, bytes);
+        float* device;
+        cudaMalloc((void**)&device, bytes);
+
+        for (size_t i = 0; i < N; ++i) {
+            pinned[i] = i;
+            pageable[i] = i;
+            managed[i] = i;
+        }
+        cudaDeviceSynchronize();
+
+        for (size_t repeat = 0; repeat < NUMB_REPEAT; ++repeat) {
+            auto start = std::chrono::high_resolution_clock::now();
+            cudaMemcpy(device, pinned, bytes, cudaMemcpyHostToDevice);
+            cudaMemcpy(pinned, device, bytes, cudaMemcpyDeviceToHost);
+            auto end = std::chrono::high_resolution_clock::now();
+            auto pinnedTransfer = end - start;
+
+            start = std::chrono::high_resolution_clock::now();
+            cudaMemcpy(device, pageable, bytes, cudaMemcpyHostToDevice);
+            cudaMemcpy(pageable, device, bytes, cudaMemcpyDeviceToHost);
+            end = std::chrono::high_resolution_clock::now();
+            auto pageableTransfer = end - start;
+
+            start = std::chrono::high_resolution_clock::now();
+            computeKernel<<<(N + 255) / 256, 256>>>(managed, N);
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            auto managedKernel = end - start;
+
+            start = std::chrono::high_resolution_clock::now();
+            cudaMemPrefetchAsync(managed, bytes, 0);
+            computeKernel<<<(N + 255) / 256, 256>>>(managed, N);
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            auto managedPrefetch = end - start;
+
+            std::cout << N << "," << repeat << ","
+                      << std::fixed << std::setprecision(0)
+                      << pinnedTransfer.count() << ","
+                      << pageableTransfer.count() << ","
+                      << managedKernel.count() << ","
+                      << managedPrefetch.count() << std::endl;
+        }
+
+        cudaFreeHost(pinned);
+        free(pageable);
+        cudaFree(managed);
+        cudaFree(device);
+    }
+}
+
+void benchmarkMemoryInitAndTransfer(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
+    std::cout << "N,Repetition,Pinned Init+Transfer (ns),Pageable Init+Transfer (ns),Managed Init+Kernel+Prefetch (ns)" << std::endl;
 
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         const size_t bytes = N * sizeof(float);
 
         for (size_t repeat = 0; repeat < NUMB_REPEAT; ++repeat) {
             auto start = std::chrono::high_resolution_clock::now();
-            float* hostPinnedMemory;
-            cudaMallocHost((void**)&hostPinnedMemory, bytes);
-            for (size_t i = 0; i < N; ++i) {
-                hostPinnedMemory[i] = static_cast<float>(i);
-            }
+            float* pinned;
+            cudaMallocHost((void**)&pinned, bytes);
+            for (size_t i = 0; i < N; ++i) pinned[i] = i;
+            float* device;
+            cudaMalloc((void**)&device, bytes);
+            cudaMemcpy(device, pinned, bytes, cudaMemcpyHostToDevice);
+            cudaDeviceSynchronize();
             auto end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pinnedInitTime = end - start;
-            cudaFreeHost(hostPinnedMemory);
+            auto pinnedTime = end - start;
+            cudaFreeHost(pinned);
+            cudaFree(device);
 
             start = std::chrono::high_resolution_clock::now();
-            float* hostPageableMemory = (float*)malloc(bytes);
-            for (size_t i = 0; i < N; ++i) {
-                hostPageableMemory[i] = static_cast<float>(i);
-            }
+            float* pageable = (float*)malloc(bytes);
+            for (size_t i = 0; i < N; ++i) pageable[i] = i;
+            cudaMalloc((void**)&device, bytes);
+            cudaMemcpy(device, pageable, bytes, cudaMemcpyHostToDevice);
+            cudaDeviceSynchronize();
             end = std::chrono::high_resolution_clock::now();
-            std::chrono::duration<double, std::nano> pageableInitTime = end - start;
-            free(hostPageableMemory);
+            auto pageableTime = end - start;
+            free(pageable);
+            cudaFree(device);
+
+            start = std::chrono::high_resolution_clock::now();
+            float* managed;
+            cudaMallocManaged(&managed, bytes);
+            for (size_t i = 0; i < N; ++i) managed[i] = i;
+            cudaMemPrefetchAsync(managed, bytes, 0);
+            computeKernel<<<(N + 255) / 256, 256>>>(managed, N);
+            cudaDeviceSynchronize();
+            end = std::chrono::high_resolution_clock::now();
+            auto managedTime = end - start;
+            cudaFree(managed);
 
             std::cout << N << "," << repeat << ","
                       << std::fixed << std::setprecision(0)
-                      << pinnedInitTime.count() << ","
-                      << pageableInitTime.count() << std::endl;
+                      << pinnedTime.count() << ","
+                      << pageableTime.count() << ","
+                      << managedTime.count() << std::endl;
         }
     }
 }
 
+size_t estimateMaxN(size_t buffers_required = 3, double safety_factor = 0.9) {
+    size_t free_mem, total_mem;
+    cudaMemGetInfo(&free_mem, &total_mem);
+    size_t usable_bytes = static_cast<size_t>(free_mem * safety_factor);
+    size_t max_floats = usable_bytes / (sizeof(float) * buffers_required);
+    std::cout << "Estimated max N: " << max_floats << std::endl;
+    return max_floats;
+}
+
+
 int main() {
     const size_t MIN_N = 10'000;
-    const size_t MAX_N = 10'000'000'000;
-    const size_t NUMB_REPEAT = 10;
+    const size_t MAX_N = estimateMaxN(4);
+    const size_t NUMB_REPEAT = 20;
 
-    //benchmarkMemoryTransfers(MIN_N, MAX_N, NUMB_REPEAT);
+    runWarmup(MAX_N);
     benchmarkMemoryInitialization(MIN_N, MAX_N, NUMB_REPEAT);
+    benchmarkMemoryTransfers(MIN_N, MAX_N, NUMB_REPEAT);
+    benchmarkMemoryInitAndTransfer(MIN_N, MAX_N, NUMB_REPEAT);
 
     return 0;
 }
