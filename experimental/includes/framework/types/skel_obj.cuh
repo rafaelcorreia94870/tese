@@ -65,6 +65,25 @@ namespace rafa {
         kernel(kernel),
         extraArgs(args) {}
 
+        // Destructor
+        ~SkeletonObject() override {
+            clear();
+        }
+
+        void clear() override {
+            /* for(auto& input : inputs) {
+                if (input) {
+                    input->clear();
+                }
+            } */
+            if (output) {
+                output->clear();
+            }
+            //inputs.clear();
+            
+            extraArgs.~tuple();
+        }
+
         void print() const {
             std::cout << "\nSkeleton Type: " << skeletonType << "\n";
             std::cout << "Inputs sizes: ";
@@ -118,9 +137,10 @@ namespace rafa {
     
             T* typed_device_ptr = static_cast<T*>(device_ptr);
             
-            std::cout << "input before override: " << inputs[0]->device_data << std::endl;
-            std::cout << "typed_device_ptr: " << typed_device_ptr << std::endl;
-            inputs[0]->set_device_data(typed_device_ptr);
+            //std::cout << "input before override: " << inputs[0]->device_data << std::endl;
+            //std::cout << "typed_device_ptr: " << typed_device_ptr << std::endl;
+            size_t size = inputs[0]->size();
+            inputs[0]->set_device_data(typed_device_ptr, size);
             
             //std::cout << "Overriding device input with pointer: " << device_ptr << std::endl;
         }
@@ -128,10 +148,10 @@ namespace rafa {
         void* getDeviceOutputPtr() const override {
             //std::cout << "Calling getDeviceOutputPtr. Output is: " << output << std::endl;
             if (!output) {
-                std::cerr << "Output is nullptr! Using first Input\n";
+                //std::cerr << "Output is nullptr! Using first Input\n";
                 return inputs[0]->device_data;
             }
-            std::cout << "Device data pointer: " << output->device_data << std::endl;
+           // std::cout << "Device data pointer: " << output->device_data << std::endl;
             return output->device_data;
         }
 

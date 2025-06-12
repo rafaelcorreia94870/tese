@@ -32,12 +32,12 @@ namespace rafa {
         using const_iterator = typename std::vector<T>::const_iterator;
 
         vector() {
-            //std::cout << "\nDEFAULT CONSTRUCTOR CALLED\n" << std::endl;
+            ////std::cout << "\nDEFAULT CONSTRUCTOR CALLED\n" << std::endl;
             CUDACHECK(cudaStreamCreate(&stream));
         }
 
         vector(size_t size) : vec_size(size) {
-            //std::cout << "\nCONSTRUCTOR WITH SIZE CALLED\n" << std::endl;
+            ////std::cout << "\nCONSTRUCTOR WITH SIZE CALLED\n" << std::endl;
             CUDACHECK(cudaStreamCreate(&stream));
             alloc_host();
             alloc_device();
@@ -45,7 +45,7 @@ namespace rafa {
         }
 
         vector(size_t size, const T& value) : vec_size(size) {
-            //std::cout << "\nCONSTRUCTOR WITH SIZE AND VALUE CALLED\n" << std::endl;
+            ////std::cout << "\nCONSTRUCTOR WITH SIZE AND VALUE CALLED\n" << std::endl;
             CUDACHECK(cudaStreamCreate(&stream));
             alloc_host();
             alloc_device();
@@ -55,7 +55,7 @@ namespace rafa {
 
         // construct that accpets {}
         vector(std::initializer_list<T> init) : vec_size(init.size()) {
-            //std::cout << "\nCONSTRUCTOR WITH INITIALIZER LIST CALLED\n" << std::endl;
+            ////std::cout << "\nCONSTRUCTOR WITH INITIALIZER LIST CALLED\n" << std::endl;
             CUDACHECK(cudaStreamCreate(&stream));
             alloc_host();
             alloc_device();
@@ -64,7 +64,7 @@ namespace rafa {
         }
 
         vector(const vector& other) : vec_size(other.vec_size) {
-            std::cout << "\nCOPY CONSTRUCTOR CALLED\n" << std::endl;
+            //std::cout << "\nCOPY CONSTRUCTOR CALLED\n" << std::endl;
             host_pinned_data = other.host_pinned_data;
             device_data = other.device_data;
             skel_queue = other.skel_queue;
@@ -82,15 +82,47 @@ namespace rafa {
         }
 
         ~vector() {
-            //std::cout << "\nDESTRUCTOR CALLED\n" << std::endl;
+            if (host_pinned_data) {
+                (cudaFreeHost(host_pinned_data));
+                host_pinned_data = nullptr;
+            }
+            if (device_data) {
+                (cudaFree(device_data));
+                device_data = nullptr;
+            }
+            if (stream) {
+                (cudaStreamDestroy(stream));
+                stream = nullptr;
+            }
+            
+            ////std::cout << "\nDESTRUCTOR CALLED\n" << std::endl;
             //if (host_pinned_data) cudaFreeHost(host_pinned_data);
             //if (device_data) cudaFree(device_data);
             //cudaStreamDestroy(stream);
         }
 
+        void clear() {
+            //std::cout << "\nCLEAR CALLED\n" << std::endl;
+            if (host_pinned_data) {
+                cudaFreeHost(host_pinned_data);
+                host_pinned_data = nullptr;
+            }
+            if (device_data) {
+                cudaFree(device_data);
+                device_data = nullptr;
+            }
+            skel_queue.clear();
+            if (stream) {
+                cudaStreamDestroy(stream);
+                stream = nullptr;
+            }
+            vec_size = 0;
+        }
+
         //setters of device_data
-        void set_device_data(T* data) {
-            std::cout << "\nSET DEVICE DATA CALLED\n" << std::endl;
+        void set_device_data(T* data, size_t size) {
+            //std::cout << "\nSET DEVICE DATA CALLED\n" << std::endl;
+            vec_size = size;
             device_data = static_cast<T*>(data);
         }
 
@@ -148,9 +180,9 @@ namespace rafa {
             cudaPointerGetAttributes(&attributes, device_data);
             if (attributes.type == cudaMemoryTypeDevice) {
                 cudaMemGetInfo(&size, nullptr);
-                std::cout << "Device memory size: " << size << " bytes" << std::endl;
+                //std::cout << "Device memory size: " << size << " bytes" << std::endl;
             } else {
-                std::cout << "Pointer is not a device pointer." << std::endl;
+                //std::cout << "Pointer is not a device pointer." << std::endl;
             }
         }
 
@@ -162,10 +194,10 @@ namespace rafa {
     
         void sync_device_to_host() {
             if (!host_pinned_data || !device_data) return;
-            //std::cout << "Syncing device to host" << std::endl;
+            ////std::cout << "Syncing device to host" << std::endl;
             CUDACHECK(cudaMemcpyAsync(host_pinned_data, device_data, vec_size * sizeof(T), cudaMemcpyDeviceToHost, stream));
             CUDACHECK(cudaStreamSynchronize(stream));
-            std::cout << "Sync complete" << std::endl;
+            //std::cout << "Sync complete" << std::endl;
         }
 
         void simplify_skeletons() {
@@ -173,20 +205,20 @@ namespace rafa {
             auto it = queue.begin();
         
             
-            std::cout << "Queue size: " << queue.size() << std::endl;
+            //std::cout << "Queue size: " << queue.size() << std::endl;
         
             while (it != queue.end()) {
                 auto next_it = std::next(it);
         
                 
                 if (next_it == queue.end()) {
-                    std::cerr << "Iterator out of range" << std::endl;
+                    //std::cerr << "Iterator out of range" << std::endl;
                     break;
                 }
         
                 // Check if the pointers are not null
                 if (*it == nullptr || *next_it == nullptr) {
-                    std::cerr << "Null pointer in queue" << std::endl;
+                    //std::cerr << "Null pointer in queue" << std::endl;
                     ++it;
                     continue;
                 }
@@ -219,33 +251,32 @@ namespace rafa {
         
         template <typename Func>
         vector<T>& map_dispatch(Func kernel) {
-            std::cout << "Created SkeletonObject 1 In" << std::endl;
-            rafa::SkeletonObject<Func, vector<T>>* obj;
+            //std::cout << "Created SkeletonObject 1 In" << std::endl;
             std::vector<vector<T>*> input_vec{static_cast<vector<T>*>(this)};
 
-            obj = new rafa::SkeletonObject<Func, vector<T>>(
+            auto obj = new rafa::SkeletonObject<Func, vector<T>>(
                 "Map", input_vec, kernel
             );
         
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
+            //std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
 
             this->skel_queue.push_back(obj);
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
 
-            std::cout << "Pushed SkeletonObject to skel_queue" << std::endl;
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
-            if (!this->skel_queue.empty()) {
-                std::cout << "skel_queue skeletonType of first element: " << this->skel_queue.front()->getSkeletonType() << std::endl;
+            //std::cout << "Pushed SkeletonObject to skel_queue" << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            /* if (!this->skel_queue.empty()) {
+                //std::cout << "skel_queue skeletonType of first element: " << this->skel_queue.front()->getSkeletonType() << std::endl;
             } else {
-                std::cout << "skel_queue is empty" << std::endl;
-            }
+                //std::cout << "skel_queue is empty" << std::endl;
+            } */
             return *this;
         }
 
 
         template <typename Func, typename... Args>
         vector<T>& map_dispatch(Func kernel, Args... args) {
-            std::cout << "Created SkeletonObject 1 In + args" << std::endl;
+            //std::cout << "Created SkeletonObject 1 In + args" << std::endl;
             rafa::SkeletonObject<Func, vector<T>>* obj;
             std::vector<vector<T>*> input_vec{static_cast<vector<T>*>(this)};
             if constexpr (sizeof...(args) > 0) {
@@ -257,17 +288,17 @@ namespace rafa {
                     "Map", input_vec, kernel
                 );
             }
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
+            //std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
 
             this->skel_queue.push_back(obj);
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
 
-            std::cout << "Pushed SkeletonObject to skel_queue" << std::endl;
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "Pushed SkeletonObject to skel_queue" << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
             if (!this->skel_queue.empty()) {
-                std::cout << "skel_queue skeletonType of first element: " << this->skel_queue.front()->getSkeletonType() << std::endl;
+                //std::cout << "skel_queue skeletonType of first element: " << this->skel_queue.front()->getSkeletonType() << std::endl;
             } else {
-                std::cout << "skel_queue is empty" << std::endl;
+                //std::cout << "skel_queue is empty" << std::endl;
             }
             return *this;
         }
@@ -276,32 +307,33 @@ namespace rafa {
 
         template <typename Func, VectorLike Container>
         vector<T>& map_dispatch(Func kernel, Container& output) {
-            std::cout << "Created SkeletonObject 1 In + out" << std::endl;
+            //std::cout << "Created SkeletonObject 1 In + out" << std::endl;
             
             auto obj = new rafa::SkeletonObject<Func, Container>(
                 "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output
             );
             this->skel_queue.push_back(obj);
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
            
             return *this;
         }
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T>& map_dispatch(Func kernel, Container& output, Args... args) {
-            std::cout << "Created SkeletonObject 1 In + out + args" << std::endl;
+            //std::cout << "Created SkeletonObject 1 In + out + args" << std::endl;
             if constexpr (sizeof...(args) > 0) {
                 auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
                     "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output, args...
                 );
                 this->skel_queue.push_back(obj);
-                std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+                //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
             } else {
                 auto obj = new rafa::SkeletonObject<Func, Container>(
                     "Map", std::vector<Container*>{static_cast<Container*>(this)}, kernel, output
                 );
                 this->skel_queue.push_back(obj);
-                std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+
+                //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
             }
 
             return *this;
@@ -312,25 +344,25 @@ namespace rafa {
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T>& map_dispatch(Container& input2, Func kernel, Args... args) {
-            std::cout << "Created SkeletonObject 2 In" << std::endl;
+            //std::cout << "Created SkeletonObject 2 In" << std::endl;
             auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
                 "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, std::make_tuple(args...)
             );
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
+            //std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
             this->skel_queue.push_back(obj);
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
             return *this;
         }
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T>& map_dispatch(Container& input2, Func kernel) {
-            std::cout << "Created SkeletonObject 2 In" << std::endl;
+            //std::cout << "Created SkeletonObject 2 In" << std::endl;
             auto obj = new rafa::SkeletonObject<Func, Container>(
                 "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel
             );
-            std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
+            //std::cout << "Created SkeletonObject with skeletonType: " << obj->skeletonType << std::endl;
             this->skel_queue.push_back(obj);
-            std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+            //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
             return *this;
         }
 
@@ -338,20 +370,20 @@ namespace rafa {
 
         template <typename Func, VectorLike Container, typename... Args>
         vector<T>& map_dispatch(Container& input2, Func kernel, Container& output, Args... args) {
-            std::cout << "Created SkeletonObject 2 In + out" << std::endl;
+            //std::cout << "Created SkeletonObject 2 In + out" << std::endl;
             if constexpr (sizeof...(args) > 0) {
                 auto obj = new rafa::SkeletonObject<Func, Container, Args...>(
                     "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, output, std::make_tuple(args...)
                 );
                 this->skel_queue.push_back(obj);
-                std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+                //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
                 
             } else {
                 auto obj = new rafa::SkeletonObject<Func, Container>(
                     "Map", std::vector<Container*>{static_cast<Container*>(this), &input2}, kernel, output
                 );
                  this->skel_queue.push_back(obj);
-                 std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
+                 //std::cout << "skel_queue size: " << this->skel_queue.size() << std::endl;
 
             }
 
@@ -386,19 +418,19 @@ namespace rafa {
         auto reduce(Func kernel, Args&&... args);
 
         vector<T>& execute(){
-            /* std::cout << "\nBefore simplification:\n";
+            /* //std::cout << "\nBefore simplification:\n";
             for (auto it = skel_queue.execution_queue.begin(); it != skel_queue.execution_queue.end(); ++it) {
                 (*it)->print();
             }
             simplify_skeletons();
-            std::cout << "\nAfter simplification:\n";
+            //std::cout << "\nAfter simplification:\n";
             for (auto it = skel_queue.execution_queue.begin(); it != skel_queue.execution_queue.end(); ++it) {
             (*it)->print();
             } */
             //simplify_skeletons();
             skel_queue.execute();
             skel_queue.clear();
-            //std::cout << "Execution queue after execution: " << skel_queue.size() << std::endl;
+            ////std::cout << "Execution queue after execution: " << skel_queue.size() << std::endl;
 
             return *this;
             

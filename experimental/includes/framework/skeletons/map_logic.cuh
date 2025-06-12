@@ -12,7 +12,7 @@ namespace rafa {
     
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func>
     void map_impl(Container& container, Func func) {
-        std::cout << "\nmap_impl with 1 input\n" << std::endl;
+        //std::cout << "\nmap_impl with 1 input\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = container.size();
         size_t bytes = size * sizeof(T);
@@ -64,8 +64,8 @@ namespace rafa {
         
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func);
         CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaPeekAtLastError());
-        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        //CUDACHECK(cudaPeekAtLastError());
+        //device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
         if constexpr (sync_host) {
             //std::cout << "syncing device to host" << std::endl;
             if (container.host_pinned_data == nullptr || container.device_data == nullptr) {
@@ -84,14 +84,14 @@ namespace rafa {
         }else{
             cudaStreamSynchronize(stream);
         }
-        std::cout << "container.device_data: ";
-        device_print<<<numBlocks, blockSize, 0, stream>>>(container.device_data, size);
+        //std::cout << "container.device_data: ";
+        ////device_print<<<numBlocks, blockSize, 0, stream>>>(container.device_data, size);
     }
 
     
     template <bool sync_host, bool sync_device, VectorLike Container, typename Func, typename... Args>
     void map_impl(Container& input, Func func, Container& output, Args... args) {
-        std::cout << "\nmap_impl with 1 input + output\n" << std::endl;
+        //std::cout << "\nmap_impl with 1 input + output\n" << std::endl;
         using T = typename Container::value_type;
         size_t size = input.size();
         size_t bytes = size * sizeof(T);
@@ -123,13 +123,13 @@ namespace rafa {
 
         int blockSize = 1024;
         int numBlocks = (size + blockSize - 1) / blockSize;
-        std::cout << "d_array before: " << d_array << std::endl;
-        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        //std::cout << "d_array before: " << d_array << std::endl;
+        //device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
         mapKernel<<<numBlocks, blockSize, 0, stream>>>(d_array, size, func, args...);
         CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaPeekAtLastError());
-        std::cout << "d_array after: " << d_array << std::endl;
-        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        //CUDACHECK(cudaPeekAtLastError());
+        //std::cout << "d_array after: " << d_array << std::endl;
+        //device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
 
 
         if constexpr (!is_rafa_vector<Container>::value){
@@ -139,11 +139,11 @@ namespace rafa {
         } else {
             output.device_data = d_array;
             if constexpr (sync_host) {
-                std::cout << "syncing device to host" << std::endl;
+                //std::cout << "syncing device to host" << std::endl;
                 output.sync_device_to_host();
             }
             //std::cout << "output.device_data: " << output.device_data << std::endl;
-            //device_print<<<numBlocks, blockSize, 0, stream>>>(output.device_data, size);
+            ////device_print<<<numBlocks, blockSize, 0, stream>>>(output.device_data, size);
             cudaStreamSynchronize(stream);
 
             
@@ -194,7 +194,7 @@ namespace rafa {
 
         mapKernel2inputs<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, args...);
         CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaPeekAtLastError());
+        //CUDACHECK(cudaPeekAtLastError());
 
         if constexpr (sync_host) {
             input1.sync_device_to_host();
@@ -223,7 +223,7 @@ namespace rafa {
         T* d_array, *d_array2, *d_output;
 
         std::cout << "input1.device_data: " << input1.device_data << std::endl;
-        device_print<<<1, 1>>>(input1.device_data, size);
+        //device_print<<<1, 1>>>(input1.device_data, size);
 
         if constexpr (is_rafa_vector<Container>::value) {
             if constexpr (sync_device) {
@@ -261,15 +261,15 @@ namespace rafa {
         std::cout << "Pointer type: " << attr.type << " | Device: " << attr.device << std::endl; */
         cudaStreamSynchronize(stream);
         std::cout << "d_array: " << d_array << std::endl;
-        device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
+        //device_print<<<numBlocks, blockSize, 0, stream>>>(d_array, size);
         cudaStreamSynchronize(stream);
         mapKernel2inputsOut<<<numBlocks, blockSize, 0, stream>>>(d_array, d_array2, size, func, d_output, args...);
         
         std::cout << "d_output: " << d_output << std::endl;
-        device_print<<<numBlocks, blockSize, 0, stream>>>(d_output, size);
+        //device_print<<<numBlocks, blockSize, 0, stream>>>(d_output, size);
 
         CUDACHECK(cudaStreamSynchronize(stream));
-        CUDACHECK(cudaPeekAtLastError());
+        //CUDACHECK(cudaPeekAtLastError());
         if constexpr (sync_host) {
             std::cout << "syncing device to host" << std::endl;
             output.sync_device_to_host();

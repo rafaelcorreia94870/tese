@@ -47,6 +47,9 @@ namespace rafa {
             }
             
             void clear() {
+                for (auto& op : execution_queue) {
+                    op->clear();
+                }
                 execution_queue.clear();
             }
 
@@ -56,28 +59,28 @@ namespace rafa {
                 bool last = false;
                 void* chained_output = nullptr;
 
-                std::cout << "Executing queue of size: " << execution_queue.size() << std::endl;
+                /* std::cout << "Executing queue of size: " << execution_queue.size() << std::endl;
                 std::cout << "Execution queue : \n";
                 for (size_t i = 0; i < execution_queue.size(); ++i) {
                     auto& op = execution_queue[i];
 
                     std::cout << "Executing operation: ";
                     op->print();
-                }
+                } */
                 
 
                 for (size_t i = 0; i < execution_queue.size(); ++i) {
                     auto& op = execution_queue[i];
                     last = (i == execution_queue.size() - 1);
 
-                    std::cout << "Executing operation: ";
+                    /* std::cout << "Executing operation: ";
                     op->print();
                     std::cout << "input before: ";
-                    op->printInput();
+                    op->printInput(); */
                 
                     if (chained_output != nullptr) {
-                        std::cout << "OVERRIDING DEVICE INPUT " << i << std::endl;
-                        std::cout << "chained_output: " << chained_output << std::endl;
+                        //std::cout << "OVERRIDING DEVICE INPUT " << i << std::endl;
+                        //std::cout << "chained_output: " << chained_output << std::endl;
 
                         op->overrideDeviceInput(chained_output);
                     }
@@ -85,18 +88,18 @@ namespace rafa {
                     if (first && last) {
                         op->executeSyncAll();
                     } else if (first) {
-                        std::cout << "Executing first operation: " << op->getSkeletonType() << std::endl;
+                        //std::cout << "Executing first operation: " << op->getSkeletonType() << std::endl;
                         op->executeSyncDevice();
                         first = false;
                     } else if (last) {
-                        std::cout << "Executing last operation: " << op->getSkeletonType() << std::endl;
+                        //std::cout << "Executing last operation: " << op->getSkeletonType() << std::endl;
                         op->executeSyncHost();
                     } else {
-                        std::cout << "Executing operation: " << op->getSkeletonType() << std::endl;
+                        //std::cout << "Executing operation: " << op->getSkeletonType() << std::endl;
                         op->executeAsyncAll();
                     }
-                    std::cout << "input after: ";
-                    op->printInput();
+                    /* std::cout << "input after: ";
+                    op->printInput(); */
 
                 
                     // Grab output from this op for chaining
