@@ -1,0 +1,461 @@
+ptxas warning : Conflicting options --device-debug and --generate-line-info specified, ignoring --generate-line-info option
+ptxas info    : 59 bytes gmem
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_EEC1IS0_Li0EEES0_S0_S0_
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRfEOT_RNSt16remove_referenceIS1_E4typeE
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRSt5tupleIJRfS1_S1_EEEOT_RNSt16remove_referenceIS4_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z15tuple_head_implIJLy0EERSt5tupleIJRfS1_S1_EEEDaOT0_St16integer_sequenceIyJXT_EEE
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z13my_make_tupleIJRfEEDaDpOT_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfS0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfEEC1IS0_Li0EEES0_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z15tuple_tail_implILy1ERSt5tupleIJRfS1_S1_EEJLy0ELy1EEEDaOT0_St16integer_sequenceIyJXT1_EEE
+    40 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJRfS0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy2EJRfS0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z13my_make_tupleIJRfS0_EEDaDpOT_
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_EEC1IS0_Li0EEES0_S0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK24BenchmarkingComputationsEOT_RNSt16remove_referenceIS3_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRSt5tupleIJRfEEEOT_RNSt16remove_referenceIS4_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK24BenchmarkingComputationsRSt5tupleIJRfEEJLy0EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    40 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNK24BenchmarkingComputationsclEf
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfEERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ24BenchmarkingComputationsEEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ24BenchmarkingComputationsEERSt5tupleIJRfS6_S6_EEJLy0ELy1ELy2EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ24BenchmarkingComputationsEEclIJRfS3_S3_EEEDaDpOT_
+    96 bytes stack frame, 64 bytes spill stores, 64 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EEC1IS0_Li0EEES0_S0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS4_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z15tuple_head_implIJLy0EERSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEDaOT0_St16integer_sequenceIyJXT_EEE
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z15tuple_tail_implILy1ERSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9EEEDaOT0_St16integer_sequenceIyJXT1_EEE
+    144 bytes stack frame, 96 bytes spill stores, 96 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy2EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy3EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy4EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy5EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy6EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy7EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy8EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy9EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy10EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z13my_make_tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEDaDpOT_
+    208 bytes stack frame, 168 bytes spill stores, 168 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEC1IS0_Li0EEES0_S0_S0_S0_S0_S0_S0_S0_S0_S0_
+    144 bytes stack frame, 96 bytes spill stores, 96 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK17SimpleComputationEOT_RNSt16remove_referenceIS3_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK17SimpleComputationRSt5tupleIJRfEEJLy0EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    40 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNK17SimpleComputationclEf
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequyJXT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_S0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequencT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyEEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT1_E
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_S1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationS1_EEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationS1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationEERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRK8PipelineIJ17SimpleComputationEEEOT_RNSt16remove_referenceIS5_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z17device_apply_implIRK8PipelineIJ17SimpleComputationEERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEJLy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9ELy10EEEDaOT_OT0_St16integer_sequenceIyJXT1_EEE
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationEEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    336 bytes stack frame, 192 bytes spill stores, 192 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryI24BenchmarkingComputationsS0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_IS_IS_IS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_ES0_ES0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ24BenchmarkingComputationsS0_EEclIJRfS3_S3_EEEDaDpOT_
+    168 bytes stack frame, 72 bytes spill stores, 72 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy2EJRPfS1_S1_EEONSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeEOS6_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt16forward_as_tupleIJRPfS1_S1_EESt5tupleIJDpOT_EES5_
+    56 bytes stack frame, 56 bytes spill stores, 56 bytes spill loads
+ptxas info    : Function properties for _ZNK8PipelineIJ17SimpleComputationS0_S0_S0_S0_S0_S0_S0_S0_S0_EEclIJRfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEEDaDpOT_
+    536 bytes stack frame, 200 bytes spill stores, 200 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy10EJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEONSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeEOS6_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt16forward_as_tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EESt5tupleIJDpOT_EES5_
+    232 bytes stack frame, 184 bytes spill stores, 184 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_IS_IS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_ES0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZSt9tuple_catIJSt5tupleIJRfEERS0_IJS1_S1_EEEENSt11_Tuple_cat2IS0_IJDpOT_EESt16integer_sequenceIyJEESB_Ly0EJDp18__make_integer_seqISA_yL_ZSt12tuple_size_vEEEE4_RetES8_
+    80 bytes stack frame, 56 bytes spill stores, 56 bytes spill loads
+ptxas info    : Function properties for _ZSt9tuple_catIJSt5tupleIJRfEERS0_IJS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEENSt11_Tuple_cat2IS0_IJDpOT_EESt16integer_sequenceIyJEESB_Ly0EJDp18__make_integer_seqISA_yL_ZSt12tuple_size_vEEEE4_RetES8_
+    80 bytes stack frame, 56 bytes spill stores, 56 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfEEC1ISt13_Exact_args_tS0_JELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_EEC1ISt13_Exact_args_tS0_JS0_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 52 bytes spill stores, 52 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRSt5tupleIJRfS1_EEEOT_RNSt16remove_referenceIS4_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardISt5tupleIJRfEEEOT_RNSt16remove_referenceIS3_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJOS_IJRfEERS_IJS0_S0_EEEEC1ISt13_Exact_args_tS1_JS4_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRPfEOT_RNSt16remove_referenceIS2_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_EEC1IS1_Li0EEES1_S1_S1_
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 52 bytes spill stores, 52 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    232 bytes stack frame, 180 bytes spill stores, 180 bytes spill loads
+ptxas info    : Function properties for _ZSt7forwardIRSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEEOT_RNSt16remove_referenceIS4_E4typeE
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJOS_IJRfEERS_IJS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EEEEC1ISt13_Exact_args_tS1_JS4_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1IS1_Li0EEES1_S1_S1_S1_S1_S1_S1_S1_S1_S1_S1_
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    232 bytes stack frame, 180 bytes spill stores, 180 bytes spill loads
+ptxas info    : Function properties for _ZSt16forward_as_tupleIJSt5tupleIJRfEERS0_IJS1_S1_EEEES0_IJDpOT_EES7_
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt10_Tuple_catISt5tupleIJRfS1_S1_EEJLy0ELy0ELy1EEJLy0ELy1ELy1EES0_IJOS0_IJS1_EERS0_IJS1_S1_EEEEET_St16integer_sequenceIyJXT0_EEES9_IyJXT1_EEET2_
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfEEONSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeEOS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJOSt5tupleIJRfEERS0_IJS1_S1_EEEEONSt13tuple_elementIXT_ES0_IJDpT0_EEE4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt4moveIRSt5tupleIJOS0_IJRfEERS0_IJS1_S1_EEEEEONSt16remove_referenceIT_E4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfS0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJOSt5tupleIJRfEERS0_IJS1_S1_EEEEONSt13tuple_elementIXT_ES0_IJDpT0_EEE4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJRfS0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt16forward_as_tupleIJSt5tupleIJRfEERS0_IJS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEES0_IJDpOT_EES7_
+    40 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZSt10_Tuple_catISt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEJLy0ELy0ELy1ELy2ELy3ELy4ELy5ELy6ELy7ELy8ELy9EEJLy0ELy1ELy1ELy1ELy1ELy1ELy1ELy1ELy1ELy1ELy1EES0_IJOS0_IJS1_EERS0_IJS1_S1_S1_S1_S1_S1_S1_S11_EEEEET_St16integer_sequenceIyJXT0_EEES9_IyJXT1_EEET2_
+    160 bytes stack frame, 104 bytes spill stores, 104 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJOSt5tupleIJRfEERS0_IJS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEEONSt13tuple_elementIXT_ES0_IJDpT0_EEE4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt4moveIRSt5tupleIJOS0_IJRfEERS0_IJS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEEEONSt16remove_referenceIT_E4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy0EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJOSt5tupleIJRfEERS0_IJS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEEONSt13tuple_elementIXT_ES0_IJDpT0_EEE4typeEOS9_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy1EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy2EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy3EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy4EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy5EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy6EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy7EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy8EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZSt3getILy9EJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EERNSt13tuple_elementIXT_ESt5tupleIJDpT0_EEE4typeERS5_
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _Z3cosf
+    16 bytes stack frame, 12 bytes spill stores, 12 bytes spill loads
+ptxas info    : Function properties for _Z3logf
+    16 bytes stack frame, 12 bytes spill stores, 12 bytes spill loads
+ptxas info    : Function properties for _Z3sinf
+    16 bytes stack frame, 12 bytes spill stores, 12 bytes spill loads
+ptxas info    : Function properties for _Z13my_make_tupleIJRfS0_S0_EEDaDpOT_
+    56 bytes stack frame, 56 bytes spill stores, 56 bytes spill loads
+ptxas info    : Function properties for _Z10tuple_headILy1ERSt5tupleIJRfS1_S1_EEEDaOT0_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z10tuple_tailILy1ERSt5tupleIJRfS1_S1_EEEDaOT0_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK24BenchmarkingComputationsRSt5tupleIJRfEEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ24BenchmarkingComputationsEERSt5tupleIJRfS6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _Z13my_make_tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EEDaDpOT_
+    232 bytes stack frame, 184 bytes spill stores, 184 bytes spill loads
+ptxas info    : Function properties for _Z10tuple_headILy1ERSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEDaOT0_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z10tuple_tailILy1ERSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_S1_EEEDaOT0_
+    24 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK17SimpleComputationRSt5tupleIJRfEEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _Z12device_applyIRK8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_S1_EERSt5tupleIJRfS6_S6_S6_S6_S6_S6_S6_S6_S6_S6_EEEDaOT_OT0_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Compiling entry function '_Z11kernelUnaryIf12ComposeUnaryI24BenchmarkingComputationsS1_EEvPKT_yT0_PS3_' for 'sm_86'
+ptxas info    : Function properties for _Z11kernelUnaryIf12ComposeUnaryI24BenchmarkingComputationsS1_EEvPKT_yT0_PS3_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers, 128 bytes cumulative stack size, 384 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z11kernelUnaryIf12ComposeUnaryIS0_IS0_IS0_IS0_IS0_IS0_IS0_IS0_I17SimpleComputationS1_ES1_ES1_ES1_ES1_ES1_ES1_ES1_ES1_EEvPKT_yT0_PSB_' for 'sm_86'
+ptxas info    : Function properties for _Z11kernelUnaryIf12ComposeUnaryIS0_IS0_IS0_IS0_IS0_IS0_IS0_IS0_I17SimpleComputationS1_ES1_ES1_ES1_ES1_ES1_ES1_ES1_ES1_EEvPKT_yT0_PSB_
+    16 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers, 376 bytes cumulative stack size, 392 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15pipeline_kernelI8PipelineIJ24BenchmarkingComputationsS1_EEJPfS3_S3_EEvT_iDpT0_' for 'sm_86'
+ptxas info    : Function properties for _Z15pipeline_kernelI8PipelineIJ24BenchmarkingComputationsS1_EEJPfS3_S3_EEvT_iDpT0_
+    56 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 40 registers, used 0 barriers, 696 bytes cumulative stack size, 392 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z15pipeline_kernelI8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_S1_S1_EEJPfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEvT_iDpT0_' for 'sm_86'
+ptxas info    : Function properties for _Z15pipeline_kernelI8PipelineIJ17SimpleComputationS1_S1_S1_S1_S1_S1_S1_S1_S1_EEJPfS3_S3_S3_S3_S3_S3_S3_S3_S3_S3_EEvT_iDpT0_
+    240 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 104 registers, used 0 barriers, 9208 bytes cumulative stack size, 456 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z9mapKernelIf24BenchmarkingComputationsJEEvPT_iT0_DpT1_' for 'sm_86'
+ptxas info    : Function properties for _Z9mapKernelIf24BenchmarkingComputationsJEEvPT_iT0_DpT1_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers, 96 bytes cumulative stack size, 368 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Compiling entry function '_Z9mapKernelIf17SimpleComputationJEEvPT_iT0_DpT1_' for 'sm_86'
+ptxas info    : Function properties for _Z9mapKernelIf17SimpleComputationJEEvPT_iT0_DpT1_
+    8 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Used 35 registers, used 0 barriers, 80 bytes cumulative stack size, 365 bytes cmem[0], 16 bytes cmem[2]
+ptxas info    : Function properties for _ZNK12ComposeUnaryI17SimpleComputationS0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_I17SimpleComputationS0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_I17SimpleComputationS0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNK12ComposeUnaryIS_IS_IS_IS_IS_IS_I17SimpleComputationS0_ES0_ES0_ES0_ES0_ES0_ES0_EclIfEEDaT_
+    32 bytes stack frame, 28 bytes spill stores, 28 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJEEC1ISt13_Exact_args_tLi0EEET_
+    16 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJEEC2ISt13_Exact_args_tLi0EEET_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt10_Tuple_valIRfEC1IS0_EEOT_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfEEC2ISt13_Exact_args_tS0_JELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_EEC2ISt13_Exact_args_tS0_JS0_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt10_Tuple_valIRSt5tupleIJRfS1_EEEC1IS3_EEOT_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRS_IJRfS0_EEEEC1ISt13_Exact_args_tS2_JELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRS_IJRfS0_EEEEC2ISt13_Exact_args_tS2_JELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt10_Tuple_valIOSt5tupleIJRfEEEC1IS2_EEOT_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJOS_IJRfEERS_IJS0_S0_EEEEC1IS1_JS4_ELi0EEEOT_DpOT0_
+    48 bytes stack frame, 44 bytes spill stores, 44 bytes spill loads
+ptxas info    : Function properties for _ZNSt10_Tuple_valIRPfEC1IS1_EEOT_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfEEC1ISt13_Exact_args_tS1_JELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfEEC2ISt13_Exact_args_tS1_JELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_EEC1ISt13_Exact_args_tS1_JS1_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 40 bytes spill stores, 40 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_EEC2ISt13_Exact_args_tS1_JS1_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_ELi0EEET_OT0_DpOT1_
+    72 bytes stack frame, 68 bytes spill stores, 68 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    88 bytes stack frame, 84 bytes spill stores, 84 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    24 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    112 bytes stack frame, 100 bytes spill stores, 100 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    136 bytes stack frame, 116 bytes spill stores, 116 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    40 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    160 bytes stack frame, 132 bytes spill stores, 132 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_EEC1ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    184 bytes stack frame, 148 bytes spill stores, 148 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEC2ISt13_Exact_args_tS0_JS0_S0_S0_S0_S0_S0_S0_S0_S0_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt10_Tuple_valIRSt5tupleIJRfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEEC1IS3_EEOT_
+    32 bytes stack frame, 32 bytes spill stores, 32 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRS_IJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEEEC1ISt13_Exact_args_tS2_JELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 24 bytes spill stores, 24 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRS_IJRfS0_S0_S0_S0_S0_S0_S0_S0_S0_EEEEC2ISt13_Exact_args_tS2_JELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJOS_IJRfEERS_IJS0_S0_S0_S0_S0_S0_S0_S0_S0_S0_EEEEC1IS1_JS4_ELi0EEEOT_DpOT0_
+    48 bytes stack frame, 44 bytes spill stores, 44 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_ELi0EEET_OT0_DpOT1_
+    72 bytes stack frame, 68 bytes spill stores, 68 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_ELi0EEET_OT0_DpOT1_
+    16 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    88 bytes stack frame, 84 bytes spill stores, 84 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    24 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    112 bytes stack frame, 100 bytes spill stores, 100 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    32 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    136 bytes stack frame, 116 bytes spill stores, 116 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    40 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    160 bytes stack frame, 132 bytes spill stores, 132 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    48 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    184 bytes stack frame, 148 bytes spill stores, 148 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    184 bytes stack frame, 148 bytes spill stores, 148 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    56 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+    56 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC1ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+    208 bytes stack frame, 164 bytes spill stores, 164 bytes spill loads
+ptxas info    : Function properties for _ZNSt5tupleIJRPfS1_S1_S1_S1_S1_S1_S1_S1_S1_EEC2ISt13_Exact_args_tS1_JS1_S1_S1_S1_S1_S1_S1_S1_S1_ELi0EEET_OT0_DpOT1_
+    64 bytes stack frame, 8 bytes spill stores, 8 bytes spill loads
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+ptxas info    : Function properties for sinf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for cosf
+ptxas info    : Function properties for cosf
+    32 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+ptxas info    : Function properties for logf
+    0 bytes stack frame, 0 bytes spill stores, 0 bytes spill loads
+tmpxft_00001cfc_00000000-10_fusion_benchmark.cudafe1.cpp

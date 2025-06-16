@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <cmath>
+#include <fstream>
 
 void checkCudaError(cudaError_t err, const char* msg) {
     if (err != cudaSuccess) {
@@ -60,7 +61,7 @@ void runWarmup(size_t N) {
 }
 
 void benchmarkMemoryInitialization(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
-    std::cout << "N,Repetition,Pinned Init (ns),Pageable Init (ns),Managed Init (ns)" << std::endl;
+    std::cout << "N,Repetition,Pinned Init (ns),Pageable Init (ns),Managed Init (ns)\n";
 
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         const size_t bytes = N * sizeof(float);
@@ -93,13 +94,13 @@ void benchmarkMemoryInitialization(const size_t MIN_N, const size_t MAX_N, const
                       << std::fixed << std::setprecision(0)
                       << pinnedInit.count() << ","
                       << pageableInit.count() << ","
-                      << managedInit.count() << std::endl;
+                      << managedInit.count() << "\n";
         }
     }
 }
 
 void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
-    std::cout << "N,Repetition,Pinned Transfer (ns),Pageable Transfer (ns),Managed Kernel (ns),Managed Prefetch+Kernel (ns)" << std::endl;
+    std::cout << "N,Repetition,Pinned Transfer (ns),Pageable Transfer (ns),Managed Kernel (ns),Managed Prefetch+Kernel (ns)\n";
 
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         const size_t bytes = N * sizeof(float);
@@ -122,12 +123,18 @@ void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size
         for (size_t repeat = 0; repeat < NUMB_REPEAT; ++repeat) {
             auto start = std::chrono::high_resolution_clock::now();
             cudaMemcpy(device, pinned, bytes, cudaMemcpyHostToDevice);
+            cudaDeviceSynchronize();
+            computeKernel<<<(N + 255) / 256, 256>>>(device, N);
+            cudaDeviceSynchronize();
             cudaMemcpy(pinned, device, bytes, cudaMemcpyDeviceToHost);
             auto end = std::chrono::high_resolution_clock::now();
             auto pinnedTransfer = end - start;
 
             start = std::chrono::high_resolution_clock::now();
             cudaMemcpy(device, pageable, bytes, cudaMemcpyHostToDevice);
+            cudaDeviceSynchronize();
+            computeKernel<<<(N + 255) / 256, 256>>>(device, N);
+            cudaDeviceSynchronize();
             cudaMemcpy(pageable, device, bytes, cudaMemcpyDeviceToHost);
             end = std::chrono::high_resolution_clock::now();
             auto pageableTransfer = end - start;
@@ -150,7 +157,7 @@ void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size
                       << pinnedTransfer.count() << ","
                       << pageableTransfer.count() << ","
                       << managedKernel.count() << ","
-                      << managedPrefetch.count() << std::endl;
+                      << managedPrefetch.count() << "\n";
         }
 
         cudaFreeHost(pinned);
@@ -161,7 +168,7 @@ void benchmarkMemoryTransfers(const size_t MIN_N, const size_t MAX_N, const size
 }
 
 void benchmarkMemoryInitAndTransfer(const size_t MIN_N, const size_t MAX_N, const size_t NUMB_REPEAT) {
-    std::cout << "N,Repetition,Pinned Init+Transfer (ns),Pageable Init+Transfer (ns),Managed Init+Kernel+Prefetch (ns)" << std::endl;
+    std::cout << "N,Repetition,Pinned Init+Transfer (ns),Pageable Init+Transfer (ns),Managed Init+Kernel+Prefetch (ns)\n";
 
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         const size_t bytes = N * sizeof(float);
@@ -175,6 +182,10 @@ void benchmarkMemoryInitAndTransfer(const size_t MIN_N, const size_t MAX_N, cons
             cudaMalloc((void**)&device, bytes);
             cudaMemcpy(device, pinned, bytes, cudaMemcpyHostToDevice);
             cudaDeviceSynchronize();
+            computeKernel<<<(N + 255) / 256, 256>>>(device, N);
+            cudaDeviceSynchronize();
+            cudaMemcpy(pinned, device, bytes, cudaMemcpyDeviceToHost);
+            cudaDeviceSynchronize();
             auto end = std::chrono::high_resolution_clock::now();
             auto pinnedTime = end - start;
             cudaFreeHost(pinned);
@@ -186,6 +197,9 @@ void benchmarkMemoryInitAndTransfer(const size_t MIN_N, const size_t MAX_N, cons
             cudaMalloc((void**)&device, bytes);
             cudaMemcpy(device, pageable, bytes, cudaMemcpyHostToDevice);
             cudaDeviceSynchronize();
+            computeKernel<<<(N + 255) / 256, 256>>>(device, N);
+            cudaDeviceSynchronize();
+            cudaMemcpy(pageable, device, bytes, cudaMemcpyDeviceToHost);
             end = std::chrono::high_resolution_clock::now();
             auto pageableTime = end - start;
             free(pageable);
@@ -206,7 +220,7 @@ void benchmarkMemoryInitAndTransfer(const size_t MIN_N, const size_t MAX_N, cons
                       << std::fixed << std::setprecision(0)
                       << pinnedTime.count() << ","
                       << pageableTime.count() << ","
-                      << managedTime.count() << std::endl;
+                      << managedTime.count() << "\n";
         }
     }
 }
@@ -216,7 +230,7 @@ size_t estimateMaxN(size_t buffers_required = 3, double safety_factor = 0.9) {
     cudaMemGetInfo(&free_mem, &total_mem);
     size_t usable_bytes = static_cast<size_t>(free_mem * safety_factor);
     size_t max_floats = usable_bytes / (sizeof(float) * buffers_required);
-    std::cout << "Estimated max N: " << max_floats << std::endl;
+    std::cout << "Estimated max N: " << max_floats << "\n";
     return max_floats;
 }
 
@@ -227,9 +241,27 @@ int main() {
     const size_t NUMB_REPEAT = 20;
 
     runWarmup(MAX_N);
+    std::cout << "Running Init Benchmark\n";
+    std::ofstream outFile("sheet/mem_init_fix.csv");
+    auto cout_buf = std::cout.rdbuf();
+    std::cout.rdbuf(outFile.rdbuf());
     benchmarkMemoryInitialization(MIN_N, MAX_N, NUMB_REPEAT);
+    std::cout.rdbuf(cout_buf);
+    outFile.close();
+    std::cout << "Running Transfer Benchmark\n";
+    std::ofstream outFile2("sheet/mem_transfer_fix.csv");
+    cout_buf = std::cout.rdbuf();
+    std::cout.rdbuf(outFile2.rdbuf());
     benchmarkMemoryTransfers(MIN_N, MAX_N, NUMB_REPEAT);
+    std::cout.rdbuf(cout_buf);
+    outFile2.close();
+    std::cout << "Running Init and Transfer Benchmark\n";
+    std::ofstream outFile3("sheet/mem_init_transfer_fix.csv");
+    cout_buf = std::cout.rdbuf();
+    std::cout.rdbuf(outFile3.rdbuf());
     benchmarkMemoryInitAndTransfer(MIN_N, MAX_N, NUMB_REPEAT);
+    std::cout.rdbuf(cout_buf);
+    outFile3.close();
 
     return 0;
 }

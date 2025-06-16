@@ -123,7 +123,7 @@ struct VectorExt {
 
     template<typename Op>
     VectorExt& operator=(const MapExprUnary<T, Op>& expr) {
-        size_t threads = 256;
+        size_t threads = 1024;
         size_t blocks = (expr.size + threads - 1) / threads;
         kernelUnary<<<blocks, threads>>>(expr.d_in, expr.size, expr.op, d_data);
         CUDA_CHECK(cudaDeviceSynchronize());
@@ -132,7 +132,7 @@ struct VectorExt {
 
     template<typename Op>
     VectorExt& operator=(const MapExprBinary<T, Op>& expr) {
-        size_t threads = 256;
+        size_t threads = 1024;
         size_t blocks = (expr.size + threads - 1) / threads;
         kernelBinary<<<blocks, threads>>>(expr.d_in1, expr.d_in2, expr.size, expr.op, d_data);
         CUDA_CHECK(cudaDeviceSynchronize());

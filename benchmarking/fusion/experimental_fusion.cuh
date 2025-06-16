@@ -120,7 +120,7 @@ __global__ void pipeline_kernel(PipelineT pipeline, int N, Args... arrays) {
 
 template <typename PipelineT, typename... Arrays>
 void launch_kernel(PipelineT pipeline, int N, Arrays... arrays) {
-    constexpr int blockSize = 256;
+    constexpr int blockSize = 1024;
     int gridSize = (N + blockSize - 1) / blockSize;
     pipeline_kernel<<<gridSize, blockSize>>>(pipeline, N, arrays...);
     cudaDeviceSynchronize();
