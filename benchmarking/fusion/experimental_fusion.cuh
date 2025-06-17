@@ -180,3 +180,28 @@ std::chrono::duration<double> tensimplecomputations_expr(size_t n) {
 
     return end - start;
 }
+
+std::chrono::duration<double> singlecomputation_expr(size_t n) {
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<float> vec1(n, 1.0f);
+    std::vector<float> result(n, 0);
+    float *d_vec1, *d_result;
+    cudaMalloc(&d_vec1, n * sizeof(float));
+    cudaMalloc(&d_result, n * sizeof(float));
+    cudaMemcpyAsync(d_vec1, vec1.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_result, result.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+
+    auto pipeline = make_pipeline(SimpleComputation());
+    launch_kernel(pipeline, n, d_vec1, d_result);
+    cudaMemcpyAsync(result.data(), d_result, n * sizeof(float), cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
+    auto end = std::chrono::high_resolution_clock::now();
+    //std::cout << "Result[0]: " << result[0] << std::endl;
+    cudaFree(d_vec1);
+    cudaFree(d_result);
+    cudaStreamDestroy(stream);
+
+    return end - start;
+}

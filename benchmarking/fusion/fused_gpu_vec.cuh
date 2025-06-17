@@ -188,3 +188,17 @@ std::chrono::duration<double> tensimplecomputations_gpu_vec(size_t n){
 
     return end - start;
 }
+
+
+std::chrono::duration<double> singlecomputation_gpu_vec(size_t n){
+    auto start = std::chrono::high_resolution_clock::now();
+
+    VectorExt<float> vec1(n, 1.0f);
+    VectorExt<float> result(n);
+
+    result = vec1.map(SimpleComputation());
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    return end - start;
+}
