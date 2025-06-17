@@ -137,7 +137,7 @@ int main() {
 
     const size_t it = 20;
     
-    /* auto warmup_expr = twointensivecomputations_expr(N, 1);
+    auto warmup_expr = twointensivecomputations_expr(N, 1);
     auto warmup_gpu_vec = twointensivecomputations_gpu_vec(N, 1);
     auto warmup_old = twointensivecomputations_old(N, 1);
 
@@ -148,7 +148,7 @@ int main() {
               << warmup_old.count() << "s" << std::endl;
               
               
-    std::cout << "Starting benchmarking two intensive computations..." << std::endl;
+    /* std::cout << "Starting benchmarking two intensive computations..." << std::endl;
     std::ofstream outFile("../sheet/fusion_data_optimized_smallN.csv");
     auto cout_buf = std::cout.rdbuf();
     std::cout.rdbuf(outFile.rdbuf());
@@ -162,7 +162,7 @@ int main() {
     ten_simple_computations_benchmark(10'000, 50'000'000, it);
 
     std::cout.rdbuf(cout_buf);
-    std::cout << "Benchmarking completed." << std::endl; */
+    std::cout << "Benchmarking completed." << std::endl;
 
     std::cout << "Starting single computation benchmark...\n";
     std::ofstream outFile3("../sheet/single_computation_benchmark.csv");
@@ -170,7 +170,7 @@ int main() {
     std::cout.rdbuf(outFile3.rdbuf());
     single_computation_benchmark(10'000, 50'000'000, it);
     std::cout.rdbuf(cout_buf3);
-    std::cout << "Single computation benchmark completed.\n";
+    std::cout << "Single computation benchmark completed.\n"; */
 
 
 
