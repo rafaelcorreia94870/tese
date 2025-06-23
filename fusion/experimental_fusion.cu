@@ -3,6 +3,9 @@
 #include <utility>
 #include <type_traits>
 #include <cuda_runtime.h>
+#include <chrono>
+#include "kernel_op.cuh"
+
 
 template <typename... Args>
 __host__ __device__
@@ -108,6 +111,24 @@ __host__ __device__ auto make_pipeline(Fs... fs) {
     return Pipeline<Fs...>(fs...);
 }
 
+
+template <typename PipelineT, typename... Args>
+__global__ void pipeline_kernel(PipelineT pipeline, int N, Args... arrays) {
+    int idx = blockIdx.x * blockDim.x + threadIdx.x;
+    if (idx < N) {
+        auto result = pipeline((arrays[idx])...);
+        std::get<sizeof...(Args) - 1>(std::forward_as_tuple(arrays...))[idx] = result;
+    }
+}
+
+template <typename PipelineT, typename... Arrays>
+void launch_kernel(PipelineT pipeline, int N, Arrays... arrays) {
+    constexpr int blockSize = 1024;
+    int gridSize = (N + blockSize - 1) / blockSize;
+    pipeline_kernel<<<gridSize, blockSize>>>(pipeline, N, arrays...);
+    cudaDeviceSynchronize();
+}
+
 struct First {
     __device__ int operator()(int x) const { return x + 1; }
 };
@@ -144,21 +165,84 @@ struct ManyInputs {
     }
 };
 
-template <typename PipelineT, typename... Args>
-__global__ void pipeline_kernel(PipelineT pipeline, int N, Args... arrays) {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx < N) {
-        auto result = pipeline((arrays[idx])...);
-        std::get<sizeof...(Args) - 1>(std::forward_as_tuple(arrays...))[idx] = result;
-    }
+std::chrono::duration<double> twointensivecomputations_expr(size_t n, size_t loop_count) {
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<float> vec1(n, 1.0f);
+    std::vector<float> result(n, 0);
+    float *d_vec1, *d_result;
+    cudaMalloc(&d_vec1, n * sizeof(float));
+    cudaMalloc(&d_result, n * sizeof(float));
+    cudaMemcpyAsync(d_vec1, vec1.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_result, result.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+
+    auto pipeline = make_pipeline(BenchmarkingComputations(loop_count), BenchmarkingComputations(loop_count));
+    launch_kernel(pipeline, n, d_vec1, d_vec1, d_result);
+    cudaMemcpyAsync(result.data(), d_result, n * sizeof(float), cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
+    auto end = std::chrono::high_resolution_clock::now();
+    //std::cout << "Result[0]: " << result[0] << std::endl;
+    cudaFree(d_vec1);
+    cudaFree(d_result);
+    cudaStreamDestroy(stream);
+
+    return end - start;
 }
 
-template <typename PipelineT, typename... Arrays>
-void launch_kernel(PipelineT pipeline, int N, Arrays... arrays) {
-    constexpr int blockSize = 256;
-    int gridSize = (N + blockSize - 1) / blockSize;
-    pipeline_kernel<<<gridSize, blockSize>>>(pipeline, N, arrays...);
-    cudaDeviceSynchronize();
+
+std::chrono::duration<double> tensimplecomputations_expr(size_t n) {
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<float> vec1(n, 1.0f);
+    std::vector<float> result(n, 0);
+    float *d_vec1, *d_result;
+    cudaMalloc(&d_vec1, n * sizeof(float));
+    cudaMalloc(&d_result, n * sizeof(float));
+    cudaMemcpyAsync(d_vec1, vec1.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_result, result.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+
+    auto pipeline = make_pipeline(SimpleComputation(),SimpleComputation(),
+                                  SimpleComputation(), SimpleComputation(),
+                                  SimpleComputation(), SimpleComputation(),
+                                  SimpleComputation(), SimpleComputation(),
+                                  SimpleComputation(), SimpleComputation());
+    launch_kernel(pipeline, n, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_vec1, d_result);
+    cudaMemcpyAsync(result.data(), d_result, n * sizeof(float), cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
+    auto end = std::chrono::high_resolution_clock::now();
+    //std::cout << "Result[0]: " << result[0] << std::endl;
+    cudaFree(d_vec1);
+    cudaFree(d_result);
+    cudaStreamDestroy(stream);
+
+    return end - start;
+}
+
+std::chrono::duration<double> singlecomputation_expr(size_t n) {
+    cudaStream_t stream;
+    cudaStreamCreate(&stream);
+    auto start = std::chrono::high_resolution_clock::now();
+    std::vector<float> vec1(n, 1.0f);
+    std::vector<float> result(n, 0);
+    float *d_vec1, *d_result;
+    cudaMalloc(&d_vec1, n * sizeof(float));
+    cudaMalloc(&d_result, n * sizeof(float));
+    cudaMemcpyAsync(d_vec1, vec1.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+    cudaMemcpyAsync(d_result, result.data(), n * sizeof(float), cudaMemcpyHostToDevice, stream);
+
+    auto pipeline = make_pipeline(SimpleComputation());
+    launch_kernel(pipeline, n, d_vec1, d_result);
+    cudaMemcpyAsync(result.data(), d_result, n * sizeof(float), cudaMemcpyDeviceToHost, stream);
+    cudaStreamSynchronize(stream);
+    auto end = std::chrono::high_resolution_clock::now();
+    //std::cout << "Result[0]: " << result[0] << std::endl;
+    cudaFree(d_vec1);
+    cudaFree(d_result);
+    cudaStreamDestroy(stream);
+
+    return end - start;
 }
 
 int main() {
