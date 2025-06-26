@@ -463,6 +463,49 @@ two_times_struct ReduceSumReverse(const size_t N, const bool enable_prints = tru
     return times;
 }
 
+three_times_struct ReduceSum3Impl(const size_t N, const bool enable_prints = true) {
+    three_times_struct times;
+
+    
+    // CUDA reduction
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> cuda_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            cuda_result_vector[0] = reduce(cuda_reduce, 0,Sum());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<int> thrust_reduce(N, 1);
+    std::vector<int> thrust_result_vector(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Sum());
+        });
+    }
+
+    // New implementation
+    std::vector<int> new_reduce(N, 1);
+    std::vector<int> new_result_vector(1);
+    {
+        times.new_time = timeFunction([&]() {
+            new_result_vector[0] = reduce_fast(new_reduce, 0, Sum());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+        std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
+    }
+
+    return times;
+}
+
 two_times_struct ReduceMult(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
 
@@ -494,6 +537,49 @@ two_times_struct ReduceMult(const size_t N, const bool enable_prints = true) {
 
     return times;
 
+}
+
+three_times_struct ReduceMult3Impl(const size_t N, const bool enable_prints = true) {
+    three_times_struct times;
+
+    
+    // CUDA reduction
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> cuda_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            cuda_result_vector[0] = reduce(cuda_reduce, 1,Multiply());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<int> thrust_reduce(N, 1);
+    std::vector<int> thrust_result_vector(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 1, Multiply());
+        });
+    }
+
+    // New implementation
+    std::vector<int> new_reduce(N, 1);
+    std::vector<int> new_result_vector(1);
+    {
+        times.new_time = timeFunction([&]() {
+            new_result_vector[0] = reduce_fast(new_reduce, 1, Multiply());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+        std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
+    }
+
+    return times;
 }
 
 two_times_struct ReduceMax(const size_t N, const bool enable_prints = true) {
@@ -555,6 +641,49 @@ two_times_struct ReduceMaxReverse(const size_t N, const bool enable_prints = tru
         compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
         std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
         std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+    }
+
+    return times;
+}
+
+three_times_struct ReduceMax3Impl(const size_t N, const bool enable_prints = true) {
+    three_times_struct times;
+
+    
+    // CUDA reduction
+    std::vector<int> cuda_reduce(N, 1);
+    std::vector<int> cuda_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            cuda_result_vector[0] = reduce(cuda_reduce, 0,Max());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<int> thrust_reduce(N, 1);
+    std::vector<int> thrust_result_vector(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Max());
+        });
+    }
+
+    // New implementation
+    std::vector<int> new_reduce(N, 1);
+    std::vector<int> new_result_vector(1);
+    {
+        times.new_time = timeFunction([&]() {
+            new_result_vector[0] = reduce_fast(new_reduce, 0, Max());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
+        std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
     }
 
     return times;

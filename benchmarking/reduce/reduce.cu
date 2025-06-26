@@ -1,6 +1,8 @@
 #include "../includes/compare.cuh"
 
 using BenchmarkFunction = std::function<two_times_struct(size_t, bool)>;
+using BenchmarkFunction_3 = std::function<three_times_struct(size_t, bool)>;
+
 
 std::string formatNumber(long long number) {
     std::stringstream ss;
@@ -54,19 +56,12 @@ void mandel_brot(const size_t width, const size_t height, const int maxIter, con
     }
 }
 
-void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, std::vector<BenchmarkFunction>& functions, bool verbose = false){
-    two_times_struct two_times;
+void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, std::vector<BenchmarkFunction_3>& functions, bool verbose = false){
+    three_times_struct three_times;
     int function_index = 0;
-    std::vector<std::tuple<int, size_t, size_t, long long, long long>> results;
+    std::vector<std::tuple<int, size_t, size_t, long long, long long, long long>> results;
 
-    std::ofstream file("../sheet/reduce/reduceO3.csv");
-    std::cout.rdbuf(file.rdbuf());
-    
-    std::cout << "Function;Loop; N; CUDA Time (ms);Thrust Time (ms)\n";
-    std::cout.rdbuf(std::cout.rdbuf());
     std::cout << "Benchmarking started..." << std::endl;
-
-
     for(size_t i = 0; i < NUMB_REPEAT; i++){
         for (auto& function : functions){
             std::cout << "Function index: " << function_index << std::endl;
@@ -74,29 +69,30 @@ void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, 
             function_index++;
             for(size_t N = MAX_N; N >= MIN_N; N /= 10){
                 std::cout << "N = " << formatNumber(N) << std::endl;
-                two_times = function(N, verbose);
-                long long cudaTime = two_times.cuda_time.count();
-                long long thrustTime = two_times.thrust_time.count();
-                std::cout << "CUDA time: " << cudaTime  << " ms" << "\nThrust time: " << thrustTime << " ms" << std::endl;
+                three_times = function(N, verbose);
+                long long cudaTime = three_times.cuda_time.count();
+                long long thrustTime = three_times.thrust_time.count();
+                long long newTime = three_times.new_time.count();
+                std::cout << "CUDA time: " << cudaTime  << " ms" << "\nThrust time: " << thrustTime << " ms" << "\nNew time: " << newTime << " ms" << std::endl;
                 std::cout << "------------------------------------------------" << std::endl;
-                results.emplace_back(function_index, i + 1, N, cudaTime, thrustTime);
+                results.emplace_back(function_index, i + 1, N, cudaTime, thrustTime, newTime);
             }
             std::cout << "################################################" << std::endl;
         }
         function_index = 4;
     } 
     std::cout << "Benchmarking completed." << std::endl;
-    std::cout << "Function,Loop, N, CUDA Time (ms),Thrust Time (ms)\n";
+    std::ofstream file("../sheet/reduce/newreduce.csv");
+    auto coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(file.rdbuf());
-
-    
-    for (const auto& [func, loop, N, cuda_time, thrust_time] : results) {
-        std::cout << func << ";" << loop << ";" << N << ";" << cuda_time << ";" << thrust_time << "\n";
+    std::cout << "Function;Loop; N; CUDA Time (ms);Thrust Time (ms);New Time (ms)\n";
+    for (const auto& [func, loop, N, cuda_time, thrust_time, new_time] : results) {
+        std::cout << func << ";" << loop << ";" << N << ";" << cuda_time << ";" << thrust_time << ";" << new_time << "\n";
     }
+    std::cout.rdbuf(coutbuf);
     file.close();
     std::cout.rdbuf(std::cout.rdbuf());
 
-    std::cout << "Results saved to 'reduce.csv'" << std::endl;
 }
 
 
@@ -128,7 +124,7 @@ int main() {
     int maxIter = 100'000;
 
 
-    std::vector<BenchmarkFunction> reduces = { ReduceSum, ReduceSumReverse, ReduceMax, ReduceMaxReverse,};
+    std::vector<BenchmarkFunction_3> reduces = { ReduceSum3Impl, ReduceMax3Impl, ReduceMult3Impl};
     
     benchmark(MIN_N, MAX_N, 10, reduces, true);
     return 0;
