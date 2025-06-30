@@ -89,3 +89,23 @@ struct MandelbrotFunctor {
         return iter;
     }
 };
+
+template<typename T>
+struct Square {
+    __device__ T operator()(T x) const {
+        return x * x;
+    }
+};
+
+template<typename T>
+struct Add {
+    __device__ T operator()(T x, T y) const {
+        return x + y;
+    }
+};
+
+struct Xor {
+    __device__ int operator()(int x, int y) const {
+        return x ^ y;
+    }
+};

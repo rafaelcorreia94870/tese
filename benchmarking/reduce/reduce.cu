@@ -2,6 +2,7 @@
 
 using BenchmarkFunction = std::function<two_times_struct(size_t, bool)>;
 using BenchmarkFunction_3 = std::function<three_times_struct(size_t, bool)>;
+using TestFunction = std::function<void(size_t, bool)>;
 
 
 std::string formatNumber(long long number) {
@@ -117,15 +118,26 @@ void benchmark(const size_t NUMB_REPEAT, const size_t width, const size_t height
 
 }
 
+void testReduceCapability(const size_t N, std::vector<TestFunction>& functions, const bool enable_prints = true) {
+    std::cout << "Testing Reduces with N = " << formatNumber(N) << std::endl;
+    for (const auto& function : functions) {
+        function(N, enable_prints);
+        std::cout << "------------------------------------------------" << std::endl;
+    }
+}
+
 int main() {
     const size_t MAX_N = 1'000'000'000;
     const size_t MIN_N = 10'000;
     size_t width = 1024, height = 1024;
     int maxIter = 100'000;
 
-
-    std::vector<BenchmarkFunction_3> reduces = { ReduceSum3Impl, ReduceMax3Impl, ReduceMult3Impl};
+    /* std::vector<BenchmarkFunction_3> reduces = { ReduceSum3Impl, ReduceMax3Impl, ReduceMult3Impl};
     
-    benchmark(MIN_N, MAX_N, 10, reduces, true);
+    benchmark(MIN_N, MAX_N, 10, reduces, true); */
+    //ReduceSum3Impl(MIN_N, true);
+    //ReduceMax3Impl(MIN_N, true);
+    std::vector<TestFunction> functions = {test_Reduces};
+    testReduceCapability(MIN_N, functions, true);
     return 0;
 }

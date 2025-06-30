@@ -355,7 +355,6 @@ two_times_struct mysaxpy(const size_t N, const bool enable_prints = true) {
     return times;
 }
 
-
 two_times_struct mysaxpyReverse(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
 
@@ -725,7 +724,6 @@ two_times_struct IntensiveComputationCompare(const size_t N, const bool enable_p
     return times;
 }
 
-
 two_times_struct IntensiveComputationCompareReverse(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
 
@@ -762,7 +760,6 @@ two_times_struct IntensiveComputationCompareReverse(const size_t N, const bool e
 
     return times;
 }
-
 
 two_times_struct two_thrust(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
@@ -807,7 +804,6 @@ two_times_struct two_thrust(const size_t N, const bool enable_prints = true) {
     return times;
 }
 
-
 two_times_struct two_cuda(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
 
@@ -840,7 +836,6 @@ two_times_struct two_cuda(const size_t N, const bool enable_prints = true) {
     return times;
 }
 
-
 two_times_struct MandelbrotBenchmark(const size_t width, const size_t height, const int maxIter, const bool enable_prints = true) {
     two_times_struct times;
     size_t N = width * height;
@@ -870,4 +865,83 @@ two_times_struct MandelbrotBenchmark(const size_t width, const size_t height, co
     }
 
     return times;
+}
+
+void test_Reduces(const size_t N, const bool enable_prints = true) {
+    std::vector<float> float_reduce(N, 2.0f);
+    std::vector<int> int_reduce(N, 2);
+    std::vector<double> double_reduce(N, 2.0);
+    std::vector<uint8_t> bool_reduce(N, 1);
+    std::vector<char> string_reduce(N, 'r');
+    std::cout << "enable_prints: " << enable_prints << std::endl;
+    std::cout << "------------------------------------------------\n";
+
+    // Test Float Reduce
+    std::vector<float> float_result(1);
+    {
+        float_result[0] = reduce_fast(float_reduce, 0.0f, Add<float>());
+        if (enable_prints) {
+            std::cout << "Float Reduce Result: " << float_result[0] << std::endl;
+            std::cout << "Expected Result:     " << N * 2.0f << std::endl;
+        }
+    }
+    std::cout << "------------------------------------------------\n";
+
+
+    // Test Int Reduce
+    std::vector<int> int_result(1);
+    {
+        int_result[0] = reduce_fast(int_reduce, 0, Add<int>());
+        if (enable_prints) {
+            std::cout << "Int Reduce Result: " << int_result[0] << std::endl;
+            std::cout << "Expected Result:   " << N * 2 << std::endl;
+        }
+    }
+    std::cout << "------------------------------------------------\n";
+
+
+    // Test Double Reduce
+    std::vector<double> double_result(1);
+    {
+        double_result[0] = reduce_fast(double_reduce, 0.0, Add<double>());
+        if (enable_prints) {
+            std::cout << "Double Reduce Result: " << double_result[0] << std::endl;
+            std::cout << "Expected Result:      " << N * 2.0 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Bool Reduce
+    std::vector<bool> bool_result(1);
+    {
+        int xor_result = reduce_fast(bool_reduce, 0, Xor());
+        bool final_bool = (xor_result != 0);
+        if (enable_prints) {
+            std::cout << "Bool Reduce Result: " << final_bool << "\n";
+            std::cout << "Expected Result:    " << (N % 2 == 1) << "\n";
+        }
+    }
+
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Char Reduce
+    std::vector<char> char_result(1);
+    {
+        char_result[0] = reduce_fast(string_reduce, ' ', Add<char>());
+        if (enable_prints) {
+            std::cout << "Char Reduce Result: " << char_result[0] << " (ASCII: " << static_cast<int>(char_result[0]) << ")" << std::endl;
+            int expected_sum = 0;
+            for (size_t i = 0; i < N; ++i) {
+                expected_sum += static_cast<int>(string_reduce[i]); 
+            }
+            char expected_char = static_cast<char>(expected_sum % 128);
+            std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
+        }
+    }
+
+
+
+    
 }
