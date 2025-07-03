@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #include <fstream>
-#include "fused_gpu_vec.cuh"  
+#include "test_fused_gpu_vec.cuh"  
 #include "experimental_fusion.cuh"  
 #include "kernel_op.cuh"
 
@@ -130,14 +130,14 @@ void single_computation_benchmark(size_t MIN_N, size_t MAX_N, size_t it) {
     
 
 int main() {
-    const size_t N = 50'000'000;
+    /* const size_t N = 50'000'000;
     const size_t loop_count_1 = 10;
     const size_t loop_count_2 = 100;
     const size_t loop_count_3 = 1000;
 
-    const size_t it = 20;
+    const size_t it = 20; */
     
-    auto warmup_expr = twointensivecomputations_expr(N, 1);
+    /* auto warmup_expr = twointensivecomputations_expr(N, 1);
     auto warmup_gpu_vec = twointensivecomputations_gpu_vec(N, 1);
     auto warmup_old = twointensivecomputations_old(N, 1);
 
@@ -171,10 +171,16 @@ int main() {
     std::cout.rdbuf(outFile3.rdbuf());
     single_computation_benchmark(10'000, 50'000'000, it);
     std::cout.rdbuf(cout_buf3);
-    std::cout << "Single computation benchmark completed.\n";
+    std::cout << "Single computation benchmark completed.\n"; */
 
-
-
+    runAllTests(1000);
+    std::cout << "All tests completed.\n";
+    std::cout << "Running tests with larger size...\n";
+    runAllTests(10'000);
+    std::cout << "All tests completed with larger size.\n";
+    std::cout << "Running tests with even larger size...\n";
+    runAllTests(10'000'000);
+    std::cout << "All tests completed with larger size.\n";
     /* two_intenvisve_benchmark(N, loop_count_1, loop_count_2, loop_count_3, it);
     ten_simple_computations_benchmark(50'000'000, 50'000'000, it); */
                 

@@ -6,5 +6,4 @@ nvcc -std=c++20 ^
     --extended-lambda  --expt-relaxed-constexpr^
     -arch=sm_86 -Xptxas=-v -lineinfo ^
     -ccbin "%MSVC_PATH%" ^
-    -o fusion_benchmark fusion_benchmark.cu ^
-    -g -G -arch=sm_86
+    -o fusion_benchmark fusion_benchmark.cu 
