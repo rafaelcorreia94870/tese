@@ -15,6 +15,7 @@
 #include "types/two_times_struct.h"
 #include <numeric>
 #include <stdlib.h>
+#include <cub/cub.cuh>
 
 
 two_times_struct oneInputInPlace(const size_t N, const bool enable_prints = true) {
@@ -462,13 +463,21 @@ two_times_struct ReduceSumReverse(const size_t N, const bool enable_prints = tru
     return times;
 }
 
-three_times_struct ReduceSum3Impl(const size_t N, const bool enable_prints = true) {
-    three_times_struct times;
+four_times_struct ReduceSum4Impl(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
 
-    
+    //fast new implementation
+    std::vector<int> new_reduce_fast(N, 1);
+    std::vector<int> new_result_vector_fast(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 0, Sum());
+        });
+    }
+
     // CUDA reduction
-    std::vector<int> cuda_reduce(N, 1);
     std::vector<int> cuda_result_vector(1);
+    std::vector<int> cuda_reduce(N, 1);
     {
         times.cuda_time = timeFunction([&]() {
             cuda_result_vector[0] = reduce(cuda_reduce, 0,Sum());
@@ -478,9 +487,9 @@ three_times_struct ReduceSum3Impl(const size_t N, const bool enable_prints = tru
     // Thrust reduction
     std::vector<int> thrust_reduce(N, 1);
     std::vector<int> thrust_result_vector(1);
+    thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
     {
         times.thrust_time = timeFunction([&]() {
-            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
             thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Sum());
         });
     }
@@ -497,9 +506,13 @@ three_times_struct ReduceSum3Impl(const size_t N, const bool enable_prints = tru
     if(enable_prints){
         compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
         compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce_fast", new_result_vector_fast, "thrust_reduce", thrust_result_vector, "Reduce (New Fast)", times.new_fast_time.count(), times.thrust_time.count());
         std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
         std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
         std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
+        std::cout << "New Fast Reduce Result: " << new_result_vector_fast[0] << std::endl;
+        /* std::cout << "CUB Reduce Result: " << cub_result_vector[0] << std::endl;
+        std::cout << "CUB Reduce Time: " << times.cuda_time.count() << " ms" << std::endl; */
     }
 
     return times;
@@ -538,9 +551,18 @@ two_times_struct ReduceMult(const size_t N, const bool enable_prints = true) {
 
 }
 
-three_times_struct ReduceMult3Impl(const size_t N, const bool enable_prints = true) {
-    three_times_struct times;
+four_times_struct ReduceMult4Impl(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
 
+
+    // New implementation
+    std::vector<int> new_reduce(N, 1);
+    std::vector<int> new_result_vector(1);
+    {
+        times.new_time = timeFunction([&]() {
+            new_result_vector[0] = reduce_fast(new_reduce, 1, Multiply());
+        });
+    }
     
     // CUDA reduction
     std::vector<int> cuda_reduce(N, 1);
@@ -551,31 +573,35 @@ three_times_struct ReduceMult3Impl(const size_t N, const bool enable_prints = tr
         });
     }
 
+    //new fast implementation
+    std::vector<int> new_reduce_fast(N, 1);
+    std::vector<int> new_result_vector_fast(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 1, Multiply());
+        });
+    }
+
     // Thrust reduction
     std::vector<int> thrust_reduce(N, 1);
     std::vector<int> thrust_result_vector(1);
+    thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
     {
         times.thrust_time = timeFunction([&]() {
-            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
             thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 1, Multiply());
         });
     }
 
-    // New implementation
-    std::vector<int> new_reduce(N, 1);
-    std::vector<int> new_result_vector(1);
-    {
-        times.new_time = timeFunction([&]() {
-            new_result_vector[0] = reduce_fast(new_reduce, 1, Multiply());
-        });
-    }
+    
 
     if(enable_prints){
         compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
         compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce_fast", new_result_vector_fast, "thrust_reduce", thrust_result_vector, "Reduce (New Fast)", times.new_fast_time.count(), times.thrust_time.count());
         std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
         std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
         std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
+        std::cout << "New Fast Reduce Result: " << new_result_vector_fast[0] << std::endl;
     }
 
     return times;
@@ -645,9 +671,17 @@ two_times_struct ReduceMaxReverse(const size_t N, const bool enable_prints = tru
     return times;
 }
 
-three_times_struct ReduceMax3Impl(const size_t N, const bool enable_prints = true) {
-    three_times_struct times;
+four_times_struct ReduceMax4Impl(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
 
+    //fast new implementation
+    std::vector<int> new_reduce_fast(N, 1);
+    std::vector<int> new_result_vector_fast(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 0, Max());
+        });
+    }
     
     // CUDA reduction
     std::vector<int> cuda_reduce(N, 1);
@@ -661,9 +695,9 @@ three_times_struct ReduceMax3Impl(const size_t N, const bool enable_prints = tru
     // Thrust reduction
     std::vector<int> thrust_reduce(N, 1);
     std::vector<int> thrust_result_vector(1);
+    thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
     {
         times.thrust_time = timeFunction([&]() {
-            thrust::device_vector<int> d_vec(thrust_reduce.begin(), thrust_reduce.end());
             thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0, Max());
         });
     }
@@ -680,6 +714,7 @@ three_times_struct ReduceMax3Impl(const size_t N, const bool enable_prints = tru
     if(enable_prints){
         compareAndPrint("cuda_reduce", cuda_result_vector, "thrust_reduce", thrust_result_vector, "Reduce", times.cuda_time.count(), times.thrust_time.count());
         compareAndPrint("new_reduce", new_result_vector, "thrust_reduce", thrust_result_vector, "Reduce (New)", times.new_time.count(), times.thrust_time.count());
+        compareAndPrint("new_reduce_fast", new_result_vector_fast, "thrust_reduce", thrust_result_vector, "Reduce (New Fast)", times.new_fast_time.count(), times.thrust_time.count());
         std::cout << "CUDA Reduce Result: " << cuda_result_vector[0] << std::endl;
         std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
         std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
@@ -875,6 +910,8 @@ void test_Reduces(const size_t N, const bool enable_prints = true) {
     std::vector<char> string_reduce(N, 'r');
     std::cout << "enable_prints: " << enable_prints << std::endl;
     std::cout << "------------------------------------------------\n";
+    std::cout << "------------------Reduce  fast------------------\n";
+    std::cout << "------------------------------------------------\n";
 
     // Test Float Reduce
     std::vector<float> float_result(1);
@@ -942,6 +979,146 @@ void test_Reduces(const size_t N, const bool enable_prints = true) {
     }
 
 
+    // test everything but with reduce_new_fast
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------Reduce new_fast---------------\n";
+    std::cout << "------------------------------------------------\n";
 
+    // Test Float Reduce with new_fast
+    {
+        std::vector<float> float_result_fast(1);
+        float_result_fast[0] = reduce_new_fast(float_reduce, 0.0f, Add<float>());
+        if (enable_prints) {
+            std::cout << "Float Reduce New Fast Result: " << float_result_fast[0] << std::endl;
+            std::cout << "Expected Result:              " << N * 2.0f << std::endl;
+        }
+    }
+    std::cout << "------------------------------------------------\n";
+
+    // Test Int Reduce with new_fast
+    {
+        std::vector<int> int_result_fast(1);
+        int_result_fast[0] = reduce_new_fast(int_reduce, 0, Add<int>());
+        if (enable_prints) {
+            std::cout << "Int Reduce New Fast Result: " << int_result_fast[0] << std::endl;
+            std::cout << "Expected Result:             " << N * 2 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+    // Test Double Reduce with new_fast
+    {
+        std::vector<double> double_result_fast(1);
+        double_result_fast[0] = reduce_new_fast(double_reduce, 0.0, Add<double>());
+        if (enable_prints) {
+            std::cout << "Double Reduce New Fast Result: " << double_result_fast[0] << std::endl;
+            std::cout << "Expected Result:                " << N * 2.0 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    /* // Test Bool Reduce with new_fast
+    {
+        int xor_result_fast = reduce_new_fast(bool_reduce, 0, Xor());
+        bool final_bool_fast = (xor_result_fast != 0);
+        if (enable_prints) {
+            std::cout << "Bool Reduce New Fast Result: " << final_bool_fast << "\n";
+            std::cout << "Expected Result:              " << (N % 2 == 1) << "\n";
+        }
+    } */
+
+    std::cout << "------------------------------------------------\n";
+
+    /* // Test Char Reduce with new_fast
+    {
+        std::vector<int> promoted_string_reduce(string_reduce.begin(), string_reduce.end());
+
+        int char_sum = reduce_new_fast(promoted_string_reduce, 0, Add<int>());
+
+        char final_char = static_cast<char>(char_sum % 128);
+
+        std::cout << "Char Reduce New Fast Result: " << final_char
+                  << " (ASCII: " << static_cast<int>(final_char) << ")\n";
+    } */
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------Reduce Harris-----------------\n";
+    std::cout << "------------------------------------------------\n";
+
+
+    //test everything but with T m_harris_reduce(const thrust::device_vector<T>& d_vec, BinaryOp op, T identity) {
+
+    // Test Float Reduce with m_harris_reduce
+    {
+        thrust::device_vector<float> d_float_reduce(float_reduce.begin(), float_reduce.end());
+        std::vector<float> float_result_harris(1);
+        float_result_harris[0] = m_harris_reduce(d_float_reduce, Add<float>(), 0.0f);
+        if (enable_prints) {
+            std::cout << "Float Reduce Harris Result: " << float_result_harris[0] << std::endl;
+            std::cout << "Expected Result:             " << N * 2.0f << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Int Reduce with m_harris_reduce
+    {
+        thrust::device_vector<int> d_int_reduce(int_reduce.begin(), int_reduce.end());
+        std::vector<int> int_result_harris(1);
+        int_result_harris[0] = m_harris_reduce(d_int_reduce, Add<int>(), 0);
+        if (enable_prints) {
+            std::cout << "Int Reduce Harris Result: " << int_result_harris[0] << std::endl;
+            std::cout << "Expected Result:            " << N * 2 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Double Reduce with m_harris_reduce
+    {
+        thrust::device_vector<double> d_double_reduce(double_reduce.begin(), double_reduce.end());
+        std::vector<double> double_result_harris(1);
+        double_result_harris[0] = m_harris_reduce(d_double_reduce, Add<double>(), 0.0);
+        if (enable_prints) {
+            std::cout << "Double Reduce Harris Result: " << double_result_harris[0] << std::endl;
+            std::cout << "Expected Result:              " << N * 2.0 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Bool Reduce with m_harris_reduce
+    {
+        thrust::device_vector<int> d_bool_reduce(bool_reduce.begin(), bool_reduce.end());
+        int xor_result_harris = m_harris_reduce(d_bool_reduce, Xor(), 0);
+        bool final_bool_harris = (xor_result_harris != 0);
+        if (enable_prints) {
+            std::cout << "Bool Reduce Harris Result: " << final_bool_harris << "\n";
+            std::cout << "Expected Result:             " << (N % 2 == 1) << "\n";
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+
+    // Test Char Reduce with m_harris_reduce
+    {
+        thrust::device_vector<char> d_string_reduce(string_reduce.begin(), string_reduce.end());
+        std::vector<char> char_result_harris(1);
+        char_result_harris[0] = m_harris_reduce(d_string_reduce, Add<char>(), ' ');
+        if (enable_prints) {
+            std::cout << "Char Reduce Harris Result: " << char_result_harris[0] << " (ASCII: " << static_cast<int>(char_result_harris[0]) << ")" << std::endl;
+            int expected_sum = 0;
+            for (size_t i = 0; i < N; ++i) {
+                expected_sum += static_cast<int>(string_reduce[i]); 
+            }
+            char expected_char = static_cast<char>(expected_sum % 128);
+            std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
+        }
+    }
+    std::cout << "------------------------------------------------\n";
+
+    if (enable_prints) {
+        std::cout << "All tests completed successfully!" << std::endl;
+    }
     
 }
