@@ -471,7 +471,7 @@ four_times_struct ReduceSum4Impl(const size_t N, const bool enable_prints = true
     std::vector<int> new_result_vector_fast(1);
     {
         times.new_fast_time = timeFunction([&]() {
-            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 0, Sum());
+            new_result_vector_fast[0] = reduce_v3(new_reduce_fast, 0, Sum());
         });
     }
 
@@ -499,7 +499,7 @@ four_times_struct ReduceSum4Impl(const size_t N, const bool enable_prints = true
     std::vector<int> new_result_vector(1);
     {
         times.new_time = timeFunction([&]() {
-            new_result_vector[0] = reduce_fast(new_reduce, 0, Sum());
+            new_result_vector[0] = reduce_v2(new_reduce, 0, Sum());
         });
     }
 
@@ -513,6 +513,59 @@ four_times_struct ReduceSum4Impl(const size_t N, const bool enable_prints = true
         std::cout << "New Fast Reduce Result: " << new_result_vector_fast[0] << std::endl;
         /* std::cout << "CUB Reduce Result: " << cub_result_vector[0] << std::endl;
         std::cout << "CUB Reduce Time: " << times.cuda_time.count() << " ms" << std::endl; */
+    }
+
+    return times;
+}
+
+four_times_struct ReduceSumVersionComp(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 0.0f, Sum());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_vector_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_vector_v2, 0.0f, Sum());
+        });
+    }
+    //v3 implementation
+    std::vector<float> input_vector_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.new_time = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_vector_v3, 0.0f, Sum());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 0.0f, Sum());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.cuda_time.count(), times.new_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.cuda_time.count(), times.new_fast_time.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0] << "\n";
+        std::cout << "Expected Result: " << std::accumulate(old_reduce.begin(), old_reduce.end(), 0.0f) << "\n";
+        
     }
 
     return times;
@@ -560,7 +613,7 @@ four_times_struct ReduceMult4Impl(const size_t N, const bool enable_prints = tru
     std::vector<int> new_result_vector(1);
     {
         times.new_time = timeFunction([&]() {
-            new_result_vector[0] = reduce_fast(new_reduce, 1, Multiply());
+            new_result_vector[0] = reduce_v2(new_reduce, 1, Multiply());
         });
     }
     
@@ -578,7 +631,7 @@ four_times_struct ReduceMult4Impl(const size_t N, const bool enable_prints = tru
     std::vector<int> new_result_vector_fast(1);
     {
         times.new_fast_time = timeFunction([&]() {
-            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 1, Multiply());
+            new_result_vector_fast[0] = reduce_v3(new_reduce_fast, 1, Multiply());
         });
     }
 
@@ -602,6 +655,59 @@ four_times_struct ReduceMult4Impl(const size_t N, const bool enable_prints = tru
         std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << std::endl;
         std::cout << "New Reduce Result: " << new_result_vector[0] << std::endl;
         std::cout << "New Fast Reduce Result: " << new_result_vector_fast[0] << std::endl;
+    }
+
+    return times;
+}
+
+four_times_struct ReduceMultVersionComp(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 1.0f, Multiply());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_reduce_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_reduce_v2, 1.0f, Multiply());
+        });
+    }
+
+    //v3 implementation
+    std::vector<float> input_reduce_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.new_time = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_reduce_v3, 1.0f, Multiply());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 1.0f, Multiply());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.cuda_time.count(), times.new_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.cuda_time.count(), times.new_fast_time.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0] << "\n";
+        std::cout << "Expected Result: " << std::accumulate(old_reduce.begin(), old_reduce.end(), 1.0f) << "\n";
     }
 
     return times;
@@ -679,7 +785,7 @@ four_times_struct ReduceMax4Impl(const size_t N, const bool enable_prints = true
     std::vector<int> new_result_vector_fast(1);
     {
         times.new_fast_time = timeFunction([&]() {
-            new_result_vector_fast[0] = reduce_new_fast(new_reduce_fast, 0, Max());
+            new_result_vector_fast[0] = reduce_v3(new_reduce_fast, 0, Max());
         });
     }
     
@@ -707,7 +813,7 @@ four_times_struct ReduceMax4Impl(const size_t N, const bool enable_prints = true
     std::vector<int> new_result_vector(1);
     {
         times.new_time = timeFunction([&]() {
-            new_result_vector[0] = reduce_fast(new_reduce, 0, Max());
+            new_result_vector[0] = reduce_v2(new_reduce, 0, Max());
         });
     }
 
@@ -721,6 +827,60 @@ four_times_struct ReduceMax4Impl(const size_t N, const bool enable_prints = true
     }
 
     return times;
+}
+
+four_times_struct ReduceMaxVersionComp(const size_t N, const bool enable_prints = true) {
+    four_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.cuda_time = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 0.0f, Max());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_reduce_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.thrust_time = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_reduce_v2, 0.0f, Max());
+        });
+    }
+
+    //v3 implementation
+    std::vector<float> input_reduce_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.new_time = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_reduce_v3, 0.0f, Max());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.new_fast_time = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 0.0f, Max());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.cuda_time.count(), times.thrust_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.cuda_time.count(), times.new_time.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.cuda_time.count(), times.new_fast_time.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0] << "\n";
+        std::cout << "Expected Result: " << *std::max_element(old_reduce.begin(), old_reduce.end()) << "\n";
+    }
+
+    return times;
+
 }
 
 two_times_struct IntensiveComputationCompare(const size_t N, const bool enable_prints = true) {
@@ -902,71 +1062,51 @@ two_times_struct MandelbrotBenchmark(const size_t width, const size_t height, co
     return times;
 }
 
-void test_Reduces(const size_t N, const bool enable_prints = true) {
-    std::vector<float> float_reduce(N, 2.0f);
-    std::vector<int> int_reduce(N, 2);
-    std::vector<double> double_reduce(N, 2.0);
-    std::vector<uint8_t> bool_reduce(N, 1);
-    std::vector<char> string_reduce(N, 'r');
-    std::cout << "enable_prints: " << enable_prints << std::endl;
+
+
+void test_reduce_original(const size_t N, const bool enable_prints = true) {
     std::cout << "------------------------------------------------\n";
-    std::cout << "------------------Reduce  fast------------------\n";
+    std::cout << "Testing Original Reduce Implementation\n";
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------ Float Sum ------------------\n";
     std::cout << "------------------------------------------------\n";
 
     // Test Float Reduce
+    std::vector<float> float_reduce(N, 2.0f);
     std::vector<float> float_result(1);
     {
-        float_result[0] = reduce_fast(float_reduce, 0.0f, Add<float>());
+        float_result[0] = reduce(float_reduce, 0.0f, Add<float>());
         if (enable_prints) {
             std::cout << "Float Reduce Result: " << float_result[0] << std::endl;
             std::cout << "Expected Result:     " << N * 2.0f << std::endl;
         }
     }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------- Int Sum --------------------\n";
     std::cout << "------------------------------------------------\n";
 
-
     // Test Int Reduce
+    std::vector<int> int_reduce(N, 2);
     std::vector<int> int_result(1);
     {
-        int_result[0] = reduce_fast(int_reduce, 0, Add<int>());
+        int_result[0] = reduce(int_reduce, 0, Add<int>());
         if (enable_prints) {
             std::cout << "Int Reduce Result: " << int_result[0] << std::endl;
             std::cout << "Expected Result:   " << N * 2 << std::endl;
         }
     }
-    std::cout << "------------------------------------------------\n";
-
-
-    // Test Double Reduce
-    std::vector<double> double_result(1);
-    {
-        double_result[0] = reduce_fast(double_reduce, 0.0, Add<double>());
-        if (enable_prints) {
-            std::cout << "Double Reduce Result: " << double_result[0] << std::endl;
-            std::cout << "Expected Result:      " << N * 2.0 << std::endl;
-        }
-    }
 
     std::cout << "------------------------------------------------\n";
-
-    // Test Bool Reduce
-    std::vector<bool> bool_result(1);
-    {
-        int xor_result = reduce_fast(bool_reduce, 0, Xor());
-        bool final_bool = (xor_result != 0);
-        if (enable_prints) {
-            std::cout << "Bool Reduce Result: " << final_bool << "\n";
-            std::cout << "Expected Result:    " << (N % 2 == 1) << "\n";
-        }
-    }
-
-
+    std::cout << "------------------ Char Sum --------------------\n";
     std::cout << "------------------------------------------------\n";
 
     // Test Char Reduce
+    std::vector<char> string_reduce(N, 'r');
     std::vector<char> char_result(1);
     {
-        char_result[0] = reduce_fast(string_reduce, ' ', Add<char>());
+        char_result[0] = reduce(string_reduce, ' ', Add<char>());
         if (enable_prints) {
             std::cout << "Char Reduce Result: " << char_result[0] << " (ASCII: " << static_cast<int>(char_result[0]) << ")" << std::endl;
             int expected_sum = 0;
@@ -977,136 +1117,53 @@ void test_Reduces(const size_t N, const bool enable_prints = true) {
             std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
         }
     }
+}
 
-
-    // test everything but with reduce_new_fast
+void test_reduce_v2(const size_t N, const bool enable_prints = true) {
     std::cout << "------------------------------------------------\n";
-    std::cout << "------------------Reduce new_fast---------------\n";
+    std::cout << "Testing Reduce V2 Implementation\n";
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------ Float Sum -------------------\n";
     std::cout << "------------------------------------------------\n";
 
-    // Test Float Reduce with new_fast
+    // Test Float Reduce
+    std::vector<float> float_reduce(N, 2.0f);
+    std::vector<float> float_result(1);
     {
-        std::vector<float> float_result_fast(1);
-        float_result_fast[0] = reduce_new_fast(float_reduce, 0.0f, Add<float>());
+        float_result[0] = reduce_v2(float_reduce, 0.0f, Add<float>());
         if (enable_prints) {
-            std::cout << "Float Reduce New Fast Result: " << float_result_fast[0] << std::endl;
-            std::cout << "Expected Result:              " << N * 2.0f << std::endl;
-        }
-    }
-    std::cout << "------------------------------------------------\n";
-
-    // Test Int Reduce with new_fast
-    {
-        std::vector<int> int_result_fast(1);
-        int_result_fast[0] = reduce_new_fast(int_reduce, 0, Add<int>());
-        if (enable_prints) {
-            std::cout << "Int Reduce New Fast Result: " << int_result_fast[0] << std::endl;
-            std::cout << "Expected Result:             " << N * 2 << std::endl;
+            std::cout << "Float Reduce Result: " << float_result[0] << std::endl;
+            std::cout << "Expected Result:     " << N * 2.0f << std::endl;
         }
     }
 
     std::cout << "------------------------------------------------\n";
-    // Test Double Reduce with new_fast
+    std::cout << "------------------- Int Sum --------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Int Reduce
+    std::vector<int> int_reduce(N, 2);
+    std::vector<int> int_result(1);
     {
-        std::vector<double> double_result_fast(1);
-        double_result_fast[0] = reduce_new_fast(double_reduce, 0.0, Add<double>());
+        int_result[0] = reduce_v2(int_reduce, 0, Add<int>());
         if (enable_prints) {
-            std::cout << "Double Reduce New Fast Result: " << double_result_fast[0] << std::endl;
-            std::cout << "Expected Result:                " << N * 2.0 << std::endl;
+            std::cout << "Int Reduce Result: " << int_result[0] << std::endl;
+            std::cout << "Expected Result:   " << N * 2 << std::endl;
         }
     }
 
     std::cout << "------------------------------------------------\n";
+    std::cout << "------------------- Char Sum -------------------\n";
+    std::cout << "------------------------------------------------\n";
 
-    /* // Test Bool Reduce with new_fast
+    // Test Char Reduce
+    std::vector<char> string_reduce(N, 'r');
+    std::vector<char> char_result(1);
     {
-        int xor_result_fast = reduce_new_fast(bool_reduce, 0, Xor());
-        bool final_bool_fast = (xor_result_fast != 0);
+        char_result[0] = reduce_v2(string_reduce, ' ', Add<char>());
         if (enable_prints) {
-            std::cout << "Bool Reduce New Fast Result: " << final_bool_fast << "\n";
-            std::cout << "Expected Result:              " << (N % 2 == 1) << "\n";
-        }
-    } */
-
-    std::cout << "------------------------------------------------\n";
-
-    /* // Test Char Reduce with new_fast
-    {
-        std::vector<int> promoted_string_reduce(string_reduce.begin(), string_reduce.end());
-
-        int char_sum = reduce_new_fast(promoted_string_reduce, 0, Add<int>());
-
-        char final_char = static_cast<char>(char_sum % 128);
-
-        std::cout << "Char Reduce New Fast Result: " << final_char
-                  << " (ASCII: " << static_cast<int>(final_char) << ")\n";
-    } */
-    std::cout << "------------------------------------------------\n";
-    std::cout << "------------------Reduce Harris-----------------\n";
-    std::cout << "------------------------------------------------\n";
-
-
-    //test everything but with T m_harris_reduce(const thrust::device_vector<T>& d_vec, BinaryOp op, T identity) {
-
-    // Test Float Reduce with m_harris_reduce
-    {
-        thrust::device_vector<float> d_float_reduce(float_reduce.begin(), float_reduce.end());
-        std::vector<float> float_result_harris(1);
-        float_result_harris[0] = m_harris_reduce(d_float_reduce, Add<float>(), 0.0f);
-        if (enable_prints) {
-            std::cout << "Float Reduce Harris Result: " << float_result_harris[0] << std::endl;
-            std::cout << "Expected Result:             " << N * 2.0f << std::endl;
-        }
-    }
-
-    std::cout << "------------------------------------------------\n";
-
-    // Test Int Reduce with m_harris_reduce
-    {
-        thrust::device_vector<int> d_int_reduce(int_reduce.begin(), int_reduce.end());
-        std::vector<int> int_result_harris(1);
-        int_result_harris[0] = m_harris_reduce(d_int_reduce, Add<int>(), 0);
-        if (enable_prints) {
-            std::cout << "Int Reduce Harris Result: " << int_result_harris[0] << std::endl;
-            std::cout << "Expected Result:            " << N * 2 << std::endl;
-        }
-    }
-
-    std::cout << "------------------------------------------------\n";
-
-    // Test Double Reduce with m_harris_reduce
-    {
-        thrust::device_vector<double> d_double_reduce(double_reduce.begin(), double_reduce.end());
-        std::vector<double> double_result_harris(1);
-        double_result_harris[0] = m_harris_reduce(d_double_reduce, Add<double>(), 0.0);
-        if (enable_prints) {
-            std::cout << "Double Reduce Harris Result: " << double_result_harris[0] << std::endl;
-            std::cout << "Expected Result:              " << N * 2.0 << std::endl;
-        }
-    }
-
-    std::cout << "------------------------------------------------\n";
-
-    // Test Bool Reduce with m_harris_reduce
-    {
-        thrust::device_vector<int> d_bool_reduce(bool_reduce.begin(), bool_reduce.end());
-        int xor_result_harris = m_harris_reduce(d_bool_reduce, Xor(), 0);
-        bool final_bool_harris = (xor_result_harris != 0);
-        if (enable_prints) {
-            std::cout << "Bool Reduce Harris Result: " << final_bool_harris << "\n";
-            std::cout << "Expected Result:             " << (N % 2 == 1) << "\n";
-        }
-    }
-
-    std::cout << "------------------------------------------------\n";
-
-    // Test Char Reduce with m_harris_reduce
-    {
-        thrust::device_vector<char> d_string_reduce(string_reduce.begin(), string_reduce.end());
-        std::vector<char> char_result_harris(1);
-        char_result_harris[0] = m_harris_reduce(d_string_reduce, Add<char>(), ' ');
-        if (enable_prints) {
-            std::cout << "Char Reduce Harris Result: " << char_result_harris[0] << " (ASCII: " << static_cast<int>(char_result_harris[0]) << ")" << std::endl;
+            std::cout << "Char Reduce Result: " << char_result[0] << " (ASCII: " << static_cast<int>(char_result[0]) << ")" << std::endl;
             int expected_sum = 0;
             for (size_t i = 0; i < N; ++i) {
                 expected_sum += static_cast<int>(string_reduce[i]); 
@@ -1115,10 +1172,134 @@ void test_Reduces(const size_t N, const bool enable_prints = true) {
             std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
         }
     }
+}
+
+void test_reduce_v3(const size_t N, const bool enable_prints = true) {
     std::cout << "------------------------------------------------\n";
 
-    if (enable_prints) {
-        std::cout << "All tests completed successfully!" << std::endl;
+    std::cout << "Testing Reduce V3 Implementation\n";
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------ Float Sum -------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Float Reduce
+    std::vector<float> float_reduce(N, 2.0f);
+    std::vector<float> float_result(1);
+    {
+        float_result[0] = reduce_v3(float_reduce, 0.0f, Add<float>());
+        if (enable_prints) {
+            std::cout << "Float Reduce Result: " << float_result[0] << std::endl;
+            std::cout << "Expected Result:     " << N * 2.0f << std::endl;
+        }
     }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------ Int Sum --------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Int Reduce
+    std::vector<int> int_reduce(N, 2);
+    std::vector<int> int_result(1);
+    {
+        int_result[0] = reduce_v3(int_reduce, 0, Add<int>());
+        if (enable_prints) {
+            std::cout << "Int Reduce Result: " << int_result[0] << std::endl;
+            std::cout << "Expected Result:   " << N * 2 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------- Char Sum -------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Char Reduce
+    std::vector<char> string_reduce(N, 'r');
+    std::vector<char> char_result(1);
+    {
+        char_result[0] = reduce_v3(string_reduce, ' ', Add<char>());
+        if (enable_prints) {
+            std::cout << "Char Reduce Result: " << char_result[0] << " (ASCII: " << static_cast<int>(char_result[0]) << ")" << std::endl;
+            int expected_sum = 0;
+            for (size_t i = 0; i < N; ++i) {
+                expected_sum += static_cast<int>(string_reduce[i]); 
+            }
+            char expected_char = static_cast<char>(expected_sum % 128);
+            std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
+        }
+    }
+}
+
+
+void test_reduce_v4(const size_t N, const bool enable_prints = true) {
+    std::cout << "------------------------------------------------\n";
+    std::cout << "Testing Reduce V4 Implementation\n";
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------ Float Sum -------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Float Reduce
+    std::vector<float> float_reduce(N, 2.0f);
+    std::vector<float> float_result(1);
+    {
+        float_result[0] = reduce_v4(float_reduce, 0.0f, Add<float>());
+        if (enable_prints) {
+            std::cout << "Float Reduce Result: " << float_result[0] << std::endl;
+            std::cout << "Expected Result:     " << N * 2.0f << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------- Int Sum --------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Int Reduce
+    std::vector<int> int_reduce(N, 2);
+    std::vector<int> int_result(1);
+    {
+        int_result[0] = reduce_v4(int_reduce, 0, Add<int>());
+        if (enable_prints) {
+            std::cout << "Int Reduce Result: " << int_result[0] << std::endl;
+            std::cout << "Expected Result:   " << N * 2 << std::endl;
+        }
+    }
+
+    std::cout << "------------------------------------------------\n";
+    std::cout << "------------------- Char Sum -------------------\n";
+    std::cout << "------------------------------------------------\n";
+
+    // Test Char Reduce
+    std::vector<char> string_reduce(N, 'r');
+    std::vector<char> char_result(1);
+    {
+        char_result[0] = reduce_v4(string_reduce, ' ', Add<char>());
+        if (enable_prints) {
+            std::cout << "Char Reduce Result: " << char_result[0] << " (ASCII: " << static_cast<int>(char_result[0]) << ")" << std::endl;
+            int expected_sum = 0;
+            for (size_t i = 0; i < N; ++i) {
+                expected_sum += static_cast<int>(string_reduce[i]); 
+            }
+            char expected_char = static_cast<char>(expected_sum % 128);
+            std::cout << "Expected Result (as character): " << expected_char << " (ASCII: " << static_cast<int>(expected_char) << ")" << std::endl;
+        }
+    }
+}
+
+void test_Reduces(const size_t N, const bool enable_prints = true) {
+    for (size_t i = 0; i < 20 ; ++i) {
+        std::cout << "------------------------------------------------\n";
+        std::cout << "Testing Reduce with N = " << N << "\n";
+        std::cout << "------------------------------------------------\n";
+        test_reduce_original(N, enable_prints);
+        test_reduce_v2(N, enable_prints);
+        test_reduce_v3(N, enable_prints);
+        test_reduce_v4(N, enable_prints);
+        std::cout << "------------------------------------------------\n";
+        std::cout << "Testing Reduce with N = " << N << " Completed\n";   
+    }
+    std::cout << "------------------------------------------------\n";
+    std::cout << "-------------- All Tests Completed -------------\n";
+    std::cout << "------------------------------------------------\n";
     
 }

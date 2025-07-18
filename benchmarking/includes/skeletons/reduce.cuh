@@ -8,9 +8,18 @@
 //ver https://nvidia.github.io/cccl/cub/api/enum_namespacecub_1add0251c713859b8974806079e498d10a.html
 //https://github.com/dmlc/cub/blob/master/cub/device/device_reduce.cuh
 
-template <typename T, typename BinaryOp, typename... Args>
-__global__ void partialReduceKernel(T* d_in, T* d_out, int N, T identity, BinaryOp op, Args... args) {
-    extern __shared__ T sdata[];
+template <typename T_raw>
+using Promote = typename std::conditional<
+    std::is_integral<T_raw>::value && (sizeof(T_raw) <= sizeof(int)),
+    int,
+    T_raw
+>::type;
+
+template <typename T_raw, typename BinaryOp, typename... Args>
+__global__ void partialReduceKernel(T_raw* d_in, T_raw* d_out, int N, T_raw identity, BinaryOp op, Args... args) {
+    using T = Promote<T_raw>;
+    extern __shared__ __align__(sizeof(T)) unsigned char sdata_raw[];
+    T* sdata = reinterpret_cast<T*>(sdata_raw);
     int tid = threadIdx.x;
     int i = blockIdx.x * blockDim.x * 2 + tid;
 

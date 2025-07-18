@@ -113,7 +113,7 @@ int testReduce(size_t n) {
 int testMapReduce(size_t n) {
     std::cout << "Testing map-reduce operation..." << std::endl;
 
-    std::vector<float> host_vec(n);
+    std::vector<float> host_vec(n, 1.0f);
     for (size_t i = 0; i < n; ++i) {
         host_vec[i] = static_cast<float>(i + 1);
     }
@@ -127,7 +127,7 @@ int testMapReduce(size_t n) {
     double expected_result_d = 0.0;
     SimpleComputation sc;
     for (size_t i = 0; i < n; ++i) {
-        expected_result_d += static_cast<double>(host_vec[i]);
+        expected_result_d += 2.0 * static_cast<double>(host_vec[i]);
     }
     expected_result = static_cast<float>(expected_result_d);
 
@@ -487,7 +487,22 @@ void runAllTests(size_t n = 1000) {
     std::cout << "All tests completed.\n Passed: " << counter << " out of 11\n";
 }
 
-// Benchmark functions remain unchanged
+void runSimpleTests(size_t n = 1000) {
+    std::cout << "Running simple tests with vector size: " << n << "\n";
+    int counter = 0;
+    counter += testUnaryMap(n);
+    std::cout << "\n";
+    counter += testBinaryMap(n);
+    std::cout << "\n";
+    counter += testReduce(n);
+    std::cout << "\n";
+    counter += testMapReduce(n);
+    std::cout << "\n";
+
+    std::cout << "Simple tests completed.\n Passed: " << counter << " out of 4\n";
+}
+
+
 std::chrono::duration<double> twointensivecomputations_gpu_vec(size_t n, int loop_count) {
     auto start = std::chrono::high_resolution_clock::now();
 

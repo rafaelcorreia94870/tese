@@ -5,14 +5,6 @@
 #include <cuda_runtime.h>
 #include <thrust/device_vector.h>
 
-template <typename T, typename BinaryOp>
-__device__ T warpReduce(T val, BinaryOp op) {
-    for (int offset = warpSize / 2; offset > 0; offset /= 2) {
-        val = op(val, __shfl_down_sync(0xffffffff, val, offset));
-    }
-    return val;
-}
-
 template <typename T_raw, typename BinaryOp>
 __global__ void harrisReduceKernel(const T_raw* g_in, T_raw* g_out, int N, BinaryOp op, T_raw identity) {
     using T = Promote<T_raw>;

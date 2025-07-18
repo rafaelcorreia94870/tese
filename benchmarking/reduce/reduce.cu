@@ -84,16 +84,16 @@ void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, 
         function_index = 0;
     } 
     std::cout << "Benchmarking completed." << std::endl;
-    std::ofstream file("../sheet/reduce/fix_new_reduce_benchO2.csv");
+    /* std::ofstream file("../sheet/reduce/versions_reduce_comparison_O2.csv");
     auto coutbuf = std::cout.rdbuf();
     std::cout.rdbuf(file.rdbuf());
-    std::cout << "Function;Loop; N; CUDA Time (ms);Thrust Time (ms);Fast Time (ms);New Time(ms)\n";
+    std::cout << "Function;Loop; N;Original Reduce Time (ms);Reduce V2 Time (ms);Reduce V3 Time (ms);Reduce V4 Time (ms)\n";
     for (const auto& [func, loop, N, cuda_time, thrust_time, fast_time, new_fast] : results) {
         std::cout << func << ";" << loop << ";" << N << ";" << cuda_time << ";" << thrust_time << ";" << fast_time << ";" << new_fast << "\n";
     }
     std::cout.rdbuf(coutbuf);
     file.close();
-    std::cout.rdbuf(std::cout.rdbuf());
+    std::cout.rdbuf(std::cout.rdbuf()); */
 
 }
 
@@ -130,14 +130,15 @@ void testReduceCapability(const size_t N, std::vector<TestFunction>& functions, 
 int main() {
     const size_t MAX_N = 1'000'000'000;
     const size_t MIN_N = 100'000;
-    size_t width = 1024, height = 1024;
-    int maxIter = 100'000;
-    std::vector<TestFunction> functions = {test_Reduces};
-    testReduceCapability(MIN_N, functions, true);
+    //size_t width = 1024, height = 1024;
+    //int maxIter = 100'000;
+    //std::vector<TestFunction> functions = {test_Reduces};
+    //testReduceCapability(MIN_N, functions, true);
+    //test_Reduces(MAX_N, true);
     
-    std::vector<BenchmarkFunction_4> reduces = { ReduceSum4Impl, ReduceMax4Impl, ReduceMult4Impl};
+    std::vector<BenchmarkFunction_4> reduces = { ReduceSumVersionComp, ReduceMaxVersionComp,ReduceMultVersionComp};//ReduceSum4Impl, ReduceMax4Impl, ReduceMult4Impl};
     
-    benchmark(MIN_N, MAX_N, 10, reduces, true); 
+    benchmark(MIN_N, MAX_N, 1, reduces, true); 
     //ReduceSum3Impl(MIN_N, true);
     //ReduceMax3Impl(MIN_N, true);
     return 0;
