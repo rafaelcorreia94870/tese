@@ -113,23 +113,23 @@ int testReduce(size_t n) {
 int testMapReduce(size_t n) {
     std::cout << "Testing map-reduce operation..." << std::endl;
 
-    std::vector<float> host_vec(n, 1.0f);
+    std::vector<double> host_vec(n, 1.0f);
     for (size_t i = 0; i < n; ++i) {
-        host_vec[i] = static_cast<float>(i + 1);
+        host_vec[i] = static_cast<double>(i + 1);
     }
 
-    VectorExt<float> device_vec(host_vec);
+    VectorExt<double> device_vec(host_vec);
 
 
-    float result = device_vec.map(SimpleComputation()).reduce(Add<float>(), 0.0f);
+    double result = device_vec.map(SimpleComputation()).reduce(Add<double>(), 0.0f);
 
-    float expected_result;
+    double expected_result;
     double expected_result_d = 0.0;
     SimpleComputation sc;
     for (size_t i = 0; i < n; ++i) {
         expected_result_d += 2.0 * static_cast<double>(host_vec[i]);
     }
-    expected_result = static_cast<float>(expected_result_d);
+    expected_result = static_cast<double>(expected_result_d);
 
     std::cout << "Map-Reduce Result: " << result << std::endl;
     std::cout << "Expected Result: " << expected_result << std::endl;
@@ -194,6 +194,42 @@ int testMapWithTwoInputs(size_t n) {
     return r;
 }
 
+int testMapReduceWithTwoInputs(size_t n) {
+    std::cout << "Testing map-reduce with two inputs..." << std::endl;
+
+    std::vector<float> host_vec1(n);
+    std::vector<float> host_vec2(n);
+    for (size_t i = 0; i < n; ++i) {
+        host_vec1[i] = static_cast<float>(i + 1);
+        host_vec2[i] = static_cast<float>(i + 1);
+    }
+
+    VectorExt<float> device_vec1(host_vec1);
+    VectorExt<float> device_vec2(host_vec2);
+
+    float result = device_vec1.map(device_vec2, Product()).reduce(Add<float>(), 0.0f);
+
+    double expected_result_d = 0.0;
+    Product prod;
+    for (size_t i = 0; i < n; ++i) {
+        expected_result_d += prod(host_vec1[i], host_vec2[i]);
+    }
+    float expected_result = static_cast<float>(expected_result_d);
+
+
+    std::cout << "Map-Reduce with Two Inputs Result: " << result << std::endl;
+    std::cout << "Expected Result: " << expected_result << std::endl;
+
+    int r = 0;
+    if (fabs(result - expected_result) < 1e-4 * fabs(expected_result)) {
+        std::cout << "Test passed!" << std::endl;
+        r = 1;
+    } else {
+        std::cout << "Test failed!" << std::endl;
+    }
+    return r;
+}
+
 
 //Fails if N 10 000 000 (only fails sum)
 int testDifferentReductions(size_t n) {
@@ -249,28 +285,28 @@ int testDifferentReductions(size_t n) {
 int testChainedMapReduce(size_t n) {
     std::cout << "Testing chained map-reduce operation..." << std::endl;
 
-    std::vector<float> host_vec(n);
+    std::vector<double> host_vec(n);
     for (size_t i = 0; i < n; ++i) {
-        host_vec[i] = static_cast<float>(i + 1);
+        host_vec[i] = static_cast<double>(i + 1);
     }
 
-    VectorExt<float> device_vec(host_vec);
+    VectorExt<double> device_vec(host_vec);
 
-    float final_result = device_vec.map(Square<float>())
-                          .map(SimpleComputation())
-                          .map(Square<float>())
-                          .reduce(Add<float>(), 0.0f);
+    double final_result = device_vec.map(Square<double>())
+                          .map(DoubleIt<double>())
+                          .map(Square<double>())
+                          .reduce(Add<double>(), 0.0f);
 
-    float expected_result = 0;
+    double expected_result = 0;
     double expected_result_d = 0.0;
     for (size_t i = 0; i < n; ++i) {
         double temp = static_cast<double>(host_vec[i]);
         temp = temp * temp;                  
-        temp = SimpleComputation()(temp); 
+        temp = DoubleIt<double>()(temp); 
         temp = temp * temp;                  
         expected_result_d += temp;
     }
-    expected_result = static_cast<float>(expected_result_d);
+    expected_result = static_cast<double>(expected_result_d);
 
     std::cout << "Chained Map-Reduce Result: " << final_result << std::endl;
     std::cout << "Expected Result: " << expected_result << std::endl;
@@ -369,7 +405,8 @@ int testBinaryMapReduce(size_t n) {
     return 0; 
 }
 
-//Always fails
+
+//Fails because of the ComplexAdd is not associative
 int testComplexMapReduce(size_t n) {
     std::cout << "Testing complex map-reduce operation..." << std::endl;
 
@@ -382,28 +419,19 @@ int testComplexMapReduce(size_t n) {
 
     float result = device_vec.map(IntensiveComputation<float>()).reduce(ComplexAdd<float>(), 0.0f);
 
-    float expected_result = 0.0f;
     IntensiveComputation<float> ic;
     ComplexAdd<float> ca;
 
-    std::vector<float> mapped_host_vec(n);
+    float expected_result = 0.0f;
     for (size_t i = 0; i < n; ++i) {
-        mapped_host_vec[i] = ic(host_vec[i]);
-    }
-    
-    if (n > 0) {
-        expected_result = mapped_host_vec[0];
-        for (size_t i = 1; i < n; ++i) {
-            expected_result = ca(expected_result, mapped_host_vec[i]);
-        }
-    } else {
-        expected_result = 0.0f; 
+        expected_result = ca(expected_result, ic(host_vec[i]));
     }
 
     std::cout << "Complex Map-Reduce Result: " << result << std::endl;
     std::cout << "Expected Result: " << expected_result << std::endl;
+
     int r = 0;
-    if (std::abs(result - expected_result) < 1e-5 * expected_result) {
+    if (std::abs(result - expected_result) < 1e-5 * std::max(1.0f, std::abs(expected_result))) {
         std::cout << "Test passed!" << std::endl;
         r = 1;
     } else {
@@ -411,6 +439,7 @@ int testComplexMapReduce(size_t n) {
     }
     return r;
 }
+
 
 //Always passes
 int testMapReduceWithDifferentTypes(size_t n) {
@@ -445,6 +474,171 @@ int testMapReduceWithDifferentTypes(size_t n) {
         std::cout << "Test failed!" << std::endl;
     }
     return r;
+}
+
+int testMapTwoOutputs(size_t n) {
+    std::cout << "Testing map with two outputs (unary and binary)..." << std::endl;
+    bool passed = true;
+
+    // --- Unary Test ---
+    std::cout << "Running unary in-place test..." << std::endl;
+    std::vector<float> host_in(n);
+    for (size_t i = 0; i < n; ++i) {
+        host_in[i] = static_cast<float>(i) * 0.1f;
+    }
+
+    VectorExt<float> sin_vec(host_in); // This vector will be modified in-place
+    VectorExt<float> cos_vec(n);
+
+    // Use the new in-place syntax. `sin_vec` is both input and output.
+    sin_vec.map(SineCosine<float>(), cos_vec);
+
+    std::vector<float> actual_sin, actual_cos;
+    sin_vec.copyToHost(actual_sin);
+    cos_vec.copyToHost(actual_cos);
+
+    for (size_t i = 0; i < n; ++i) {
+        if (fabs(actual_sin[i] - sinf(host_in[i])) > 1e-5 ||
+            fabs(actual_cos[i] - cosf(host_in[i])) > 1e-5) {
+            passed = false;
+            break;
+        }
+    }
+
+    // --- Binary Test ---
+    
+    std::cout << "Running binary in-place test..." << std::endl;
+    std::vector<float> host_in1(n), host_in2(n);
+    for(size_t i = 0; i < n; ++i) {
+        host_in1[i] = static_cast<float>(i + 1);
+        host_in2[i] = static_cast<float>(n - i);
+    }
+    VectorExt<float> sum_vec(host_in1);
+    VectorExt<float> dev_in2(host_in2);
+    VectorExt<float> prod_vec(n);
+
+    sum_vec.map(dev_in2, SumAndProduct<float>(), prod_vec);
+
+    std::vector<float> actual_sum, actual_prod;
+    sum_vec.copyToHost(actual_sum);
+    prod_vec.copyToHost(actual_prod);
+    for (size_t i = 0; i < n; ++i) {
+        if (fabs(actual_sum[i] - (host_in1[i] + host_in2[i])) > 1e-5 ||
+            fabs(actual_prod[i] - (host_in1[i] * host_in2[i])) > 1e-5) {
+            passed = false;
+            break;
+        }
+    }
+
+    // Print results
+    std::cout << "Unary Map Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << actual_sin[i] << " ";
+    }
+    std::cout << "\n";
+    std::cout << "Cosine Map Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << actual_cos[i] << " ";
+    }
+    std::cout << "\n";
+
+    std::cout << "Sum Map Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << actual_sum[i] << " ";
+    }
+    std::cout << "\n";
+    std::cout << "Product Map Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << actual_prod[i] << " ";
+    }
+    std::cout << "\n";
+
+
+
+    int r = 0;
+    if (passed) {
+        std::cout << "Test passed!" << std::endl;
+        r = 1;
+    } else {
+        std::cout << "Test failed!" << std::endl;
+    }
+    return r;
+}
+
+int fusionBenchmark(size_t n = 1000) {
+    std::cout << "Running fusion benchmark with vector size: " << n << "\n\n";
+    
+    //benchmark our map map fusion with a manual fusion
+    auto start = std::chrono::high_resolution_clock::now();
+    VectorExt<float> vec1(n, 1.0f);
+    VectorExt<float> result(n);
+    result = vec1.map(SimpleComputation())
+                .map(SimpleComputation());
+    auto end = std::chrono::high_resolution_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Composed Unary Fusion Duration: " << duration.count() << " ms\n";
+    
+    std::vector<float> host_result;
+    result.copyToHost(host_result);
+    result.~VectorExt();
+    
+    ComposeUnaryUnary op = ComposeUnaryUnary(SimpleComputation(), SimpleComputation());
+    start = std::chrono::high_resolution_clock::now();
+    VectorExt<float> result2(n);
+    result2 = vec1.map(op);
+    end = std::chrono::high_resolution_clock::now();
+    
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Manual Fusion Duration: " << duration.count() << " ms\n";
+
+    std::vector<float> host_result2;
+    result2.copyToHost(host_result2);
+    result2.~VectorExt();
+
+    start = std::chrono::high_resolution_clock::now();
+    VectorExt<float> result3(n);
+    result3 = vec1.map(TwoSimpleComputations());
+    end = std::chrono::high_resolution_clock::now();
+
+    duration = std::chrono::duration_cast<std::chrono::milliseconds>(end - start);
+    std::cout << "Two Simple Computations Duration: " << duration.count() << " ms\n\n";
+ 
+    std::vector<float> host_result3;
+    result3.copyToHost(host_result3);
+    result3.~VectorExt();
+    bool passed = true;
+
+    for (size_t i = 0; i < n; ++i) {
+        if (fabs(host_result[i] - host_result2[i]) > 1e-5 || 
+            fabs(host_result[i] - host_result3[i]) > 1e-5) {
+            passed = false;
+            break;
+        }
+    }
+
+    //print the first 10 elements of the results
+    std::cout << "Composed Unary Fusion Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << host_result[i] << " ";
+    }
+    std::cout << "\n";
+    std::cout << "Manual Fusion Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << host_result2[i] << " ";
+    }
+    std::cout << "\n";
+    std::cout << "Two Simple Computations Result (first 10 elements): ";
+    for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+        std::cout << host_result3[i] << " ";
+    }
+    std::cout << "\n";
+
+    if (passed) {
+        std::cout << "Fusion benchmark passed!\n\n";
+    } else {
+        std::cout << "Fusion benchmark failed!\n\n";
+    }
+    return passed ? 1 : 0;
 }
 
 void runAllTests(size_t n = 1000) {
@@ -502,6 +696,43 @@ void runSimpleTests(size_t n = 1000) {
     std::cout << "Simple tests completed.\n Passed: " << counter << " out of 4\n";
 }
 
+void runReductionTests(size_t n = 1000) {
+    std::cout << "Running reduction tests with vector size: " << n << "\n";
+    int counter = 0;
+    counter += testMapReduce(n);
+    std::cout << "\n";
+    counter += testDifferentReductions(n);
+    std::cout << "\n";
+    counter += testChainedMapReduce(n);
+    std::cout << "\n";
+    counter += testParallelOperations(n);
+    std::cout << "\n";
+    counter += testComplexMapReduce(n);
+    std::cout << "\n";
+    counter += testBinaryMapReduce(n);
+    std::cout << "\n";
+
+    std::cout << "Reduction tests completed.\n Passed: " << counter << " out of 6\n";
+}
+
+void runMapTests(size_t n = 1000) {
+    std::cout << "Running map tests with vector size: " << n << "\n";
+    int counter = 0;
+    counter += testUnaryMap(n);
+    std::cout << "\n";
+    counter += testBinaryMap(n);
+    std::cout << "\n";
+    counter += testMapWithTwoInputs(n);
+    std::cout << "\n";
+    counter += testMapReduceWithTwoInputs(n);
+    std::cout << "\n";
+    counter += testMapReduceWithDifferentTypes(n);
+    std::cout << "\n";
+    counter += testMapTwoOutputs(n);
+    std::cout << "\n";
+
+    std::cout << "Map tests completed.\n Passed: " << counter << " out of 6\n";
+}
 
 std::chrono::duration<double> twointensivecomputations_gpu_vec(size_t n, int loop_count) {
     auto start = std::chrono::high_resolution_clock::now();

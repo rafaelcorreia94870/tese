@@ -43,6 +43,20 @@ struct SimpleComputation {
     }
 };
 
+struct TwoSimpleComputations {
+    __host__ __device__ float operator()(float x) const {
+        float result = x * 2.0f;
+        return result * 2.0f;
+    }
+}; 
+
+template<typename T>
+struct DoubleIt {
+    __host__ __device__ T operator()(T x) const {
+        return x * 2.0f;
+    }
+};
+
 struct SumSquares {
     __host__ __device__ float operator()(float x) const {
         return x * x;
@@ -110,4 +124,23 @@ struct Max {
         return (a > b) ? a : b;
     }
 };
+
+//forward declaration of Pair
+template<typename T1, typename T2>
+struct Pair; 
+
+template<typename T>
+struct SineCosine {
+    __host__ __device__ Pair<T, T> operator()(T x) const {
+        return Pair<T,T>(sinf(x), cosf(x));
+    }
+};
+
+template<typename T>
+struct SumAndProduct {
+    __host__ __device__ Pair<T, T> operator()(T x, T y) const {
+        return {x + y, x * y};
+    }
+};
+
 #endif // OPERATIONS_H

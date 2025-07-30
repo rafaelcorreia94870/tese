@@ -4,7 +4,7 @@
 #include <cuda_runtime.h>
 #include <chrono>
 #include <fstream>
-#include "test_fused_gpu_vec.cuh"  
+#include "final/test_fused_gpu_vec.cuh"  
 #include "experimental_fusion.cuh"  
 #include "kernel_op.cuh"
 
@@ -173,16 +173,16 @@ int main() {
     std::cout.rdbuf(cout_buf3);
     std::cout << "Single computation benchmark completed.\n"; */
 
-    runSimpleTests(1000);
+    //fusionBenchmark(1000);
     std::cout << "All tests completed.\n";
     std::cout << "Running tests with larger size...\n";
-    runSimpleTests(10'000);
+    //fusionBenchmark(10'000);
     std::cout << "All tests completed with larger size.\n";
     std::cout << "Running tests with even larger size...\n";
-    runSimpleTests(10'000'000);
+    //fusionBenchmark(10'000'000);
     std::cout << "All tests completed with even larger size.\n";
     std::cout << "Running tests with maximum size...\n";
-    runSimpleTests(1'000'000'000);
+    fusionBenchmark(1'000'000'000);
     std::cout << "All tests completed with maximum size.\n";
     std::cout << "All tests completed with larger size.\n";
     /* two_intenvisve_benchmark(N, loop_count_1, loop_count_2, loop_count_3, it);
