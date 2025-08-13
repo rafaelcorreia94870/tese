@@ -94,6 +94,19 @@ struct IntensiveComputation {
 };
 
 template<typename T>
+struct TwoIntensiveComputations {
+    __host__ __device__ T operator()(T x) const {
+        for (int i = 0; i < 100; ++i) { 
+            x = sin(x) * cos(x) + log(x + 1.0f);
+        }
+        for (int i = 0; i < 100; ++i) { 
+            x = sin(x) * cos(x) + log(x + 1.0f);
+        }
+        return x;
+    }
+};
+
+template<typename T>
 struct ComplexAdd {
     __host__ __device__ T operator()(T x, T y) const {
         T x1 = x * 0.01f;
@@ -139,7 +152,7 @@ struct SineCosine {
 template<typename T>
 struct SumAndProduct {
     __host__ __device__ Pair<T, T> operator()(T x, T y) const {
-        return {x + y, x * y};
+        return Pair<T,T>(x + y, x * y);
     }
 };
 

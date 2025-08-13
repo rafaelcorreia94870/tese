@@ -1,5 +1,26 @@
-#define CUDA_CHECK(err) if((err) != cudaSuccess) { \
-    std::cerr << "CUDA Error: " << cudaGetErrorString(err) << " at line " << __LINE__ << std::endl; exit(1); }
+#ifndef COMPOSE_CUH
+#define COMPOSE_CUH
+#pragma once
+#include <stdexcept>
+#include <string>
+
+class CudaException : public std::runtime_error {
+public:
+    CudaException(cudaError_t err, const char* file, int line)
+        : std::runtime_error(buildErrorMessage(err, file, line)) {}
+private:
+    static std::string buildErrorMessage(cudaError_t err, const char* file, int line) {
+        return std::string("CUDA Error: ") + cudaGetErrorString(err) +
+               " in " + file + " at line " + std::to_string(line);
+    }
+};
+
+#define CUDA_CHECK(err) do { \
+    cudaError_t e = (err); \
+    if (e != cudaSuccess) { \
+        throw CudaException(e, __FILE__, __LINE__); \
+    } \
+} while(0)
 
 
 template<typename T1, typename T2>
@@ -58,3 +79,27 @@ struct ComposeBinaryBinary {
         return f2(f1(x, y), z);
     }
 };
+
+#endif // COMPOSE_CUH
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
