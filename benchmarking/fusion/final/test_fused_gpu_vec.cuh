@@ -854,15 +854,24 @@ void runMapTests(size_t n = 1000) {
     std::cout << "Map tests completed.\n Passed: " << counter << " out of 6\n";
 }
 
-std::chrono::duration<double> twointensivecomputations_gpu_vec(size_t n, int loop_count) {
+std::chrono::duration<double> twointensivecomputations_gpu_vec(size_t n, int loop_count, bool print = false) {
     auto start = std::chrono::high_resolution_clock::now();
 
     lcuda::Vector<float> vec1(n, 1.0f);
-    lcuda::Vector<float> result(n);
-    result = vec1.map(BenchmarkingComputations(loop_count))
+    vec1 = vec1.map(BenchmarkingComputations(loop_count))
                 .map(BenchmarkingComputations(loop_count));
 
     auto end = std::chrono::high_resolution_clock::now();
+
+    if (print) {
+        std::vector<float> result_vec;
+        vec1.copyToHost(result_vec);
+        std::cout << "Result (first 10 elements): ";
+        for (size_t i = 0; i < std::min(n, static_cast<size_t>(10)); ++i) {
+            std::cout << result_vec[i] << " ";
+        }
+        std::cout << "\n";
+    }
     return end - start;
 }
 
@@ -870,8 +879,7 @@ std::chrono::duration<double> tensimplecomputations_gpu_vec(size_t n) {
     auto start = std::chrono::high_resolution_clock::now();
 
     lcuda::Vector<float> vec1(n, 1.0f);
-    lcuda::Vector<float> result(n);
-    result = vec1.map(SimpleComputation()).map(SimpleComputation())
+    vec1 = vec1.map(SimpleComputation()).map(SimpleComputation())
                 .map(SimpleComputation()).map(SimpleComputation())
                 .map(SimpleComputation()).map(SimpleComputation())
                 .map(SimpleComputation()).map(SimpleComputation())
@@ -885,8 +893,7 @@ std::chrono::duration<double> singlecomputation_gpu_vec(size_t n) {
     auto start = std::chrono::high_resolution_clock::now();
 
     lcuda::Vector<float> vec1(n, 1.0f);
-    lcuda::Vector<float> result(n);
-    result = vec1.map(SimpleComputation());
+    vec1 = vec1.map(SimpleComputation());
 
     auto end = std::chrono::high_resolution_clock::now();
     return end - start;

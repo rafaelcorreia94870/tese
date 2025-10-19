@@ -77,7 +77,7 @@ struct BenchmarkingComputations {
     __host__ __device__ float operator()(float x) const {
         float result = x;
         for (int i = 0; i < iterations; ++i) {
-            result = sinf(result) * cosf(result) + logf(result + 1.0f);
+            result += sinf(result) * cosf(result) + logf(result + 1.0f);
         }
         return result;
     }

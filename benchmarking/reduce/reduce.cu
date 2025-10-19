@@ -2,6 +2,7 @@
 
 using BenchmarkFunction = std::function<two_times_struct(size_t, bool)>;
 using BenchmarkFunction_4 = std::function<four_times_struct(size_t, bool)>;
+using BenchmarkFunction_5 = std::function<five_times_struct(size_t, bool)>;
 using TestFunction = std::function<void(size_t, bool)>;
 
 
@@ -119,6 +120,47 @@ void benchmark(const size_t NUMB_REPEAT, const size_t width, const size_t height
 
 }
 
+
+void benchmark(const size_t MIN_N,const size_t MAX_N, const size_t NUMB_REPEAT, std::vector<BenchmarkFunction_5>& functions, bool verbose = false){
+    five_times_struct five_times;
+    int function_index = 0;
+    std::vector<std::tuple<int, size_t, size_t, long long, long long, long long, long long, long long>> results;
+
+    std::cout << "Benchmarking started..." << std::endl;
+    for(size_t i = 0; i < NUMB_REPEAT; i++){
+        for (auto& function : functions){
+            std::cout << "Function index: " << function_index << std::endl;
+            std::cout << "#################### LOOP " << i+1 << " ####################" << std::endl;
+            function_index++;
+            for(size_t N = MAX_N; N >= MIN_N; N /= 2){
+                std::cout << "N = " << formatNumber(N) << std::endl;
+                five_times = function(N, verbose);
+                long long v1Time = five_times.v1.count();
+                long long v2Time = five_times.v2.count();
+                long long v3Time = five_times.v3.count();
+                long long v4Time = five_times.v4.count();
+                long long thrustTime = five_times.thrust.count();
+                std::cout << "v1 time: " << v1Time  << " ms" << "\nv2 time: " << v2Time << " ms" << "\nv3 time: " << v3Time << " ms" << "\nv4 time: " << v4Time << " ms" << "\nThrust time: " << thrustTime << " ms" << std::endl;
+                std::cout << "------------------------------------------------" << std::endl;
+                results.emplace_back(function_index, i + 1, N, v1Time, v2Time, v3Time, v4Time, thrustTime);
+            }
+            std::cout << "################################################" << std::endl;
+        }
+        function_index = 0;
+    } 
+    std::cout << "Benchmarking completed." << std::endl;
+
+    std::ofstream file("../sheet/reduce/all_reduce_comparison_O2.csv");
+    auto coutbuf = std::cout.rdbuf();
+    std::cout.rdbuf(file.rdbuf());
+    std::cout << "Function;Loop; N;Original Reduce Time (ms);Reduce V2 Time (ms);Reduce V3 Time (ms);Reduce V4 Time (ms);Thrust Reduce Time (ms)\n";
+    for (const auto& [func, loop, N, v1_time, v2_time, v3_time, v4_time, thrust_time] : results) {
+        std::cout << func << ";" << loop << ";" << N << ";" << v1_time << ";" << v2_time << ";" << v3_time << ";" << v4_time << ";" << thrust_time << "\n";
+    }
+    std::cout.rdbuf(coutbuf);
+    file.close();
+}
+    
 void testReduceCapability(const size_t N, std::vector<TestFunction>& functions, const bool enable_prints = true) {
     std::cout << "Testing Reduces with N = " << formatNumber(N) << std::endl;
     for (const auto& function : functions) {
@@ -128,7 +170,7 @@ void testReduceCapability(const size_t N, std::vector<TestFunction>& functions, 
 }
 
 int main() {
-    const size_t MAX_N = 1'000'000'000;
+    const size_t MAX_N = 500'000'000;
     const size_t MIN_N = 100'000;
     //size_t width = 1024, height = 1024;
     //int maxIter = 100'000;
@@ -136,7 +178,9 @@ int main() {
     //testReduceCapability(MIN_N, functions, true);
     //test_Reduces(MAX_N, true);
     
-    std::vector<BenchmarkFunction_4> reduces = { ReduceSumVersionComp, ReduceMaxVersionComp,ReduceMultVersionComp};//ReduceSum4Impl, ReduceMax4Impl, ReduceMult4Impl};
+    //std::vector<BenchmarkFunction_4> reduces = { ReduceSumVersionComp, ReduceMaxVersionComp,ReduceMultVersionComp};//C, ReduceMax4Impl, ReduceMult4Impl};
+    std::vector<BenchmarkFunction_5> reduces = { ReduceSumComp, ReduceMaxComp,ReduceMultComp};
+
     
     benchmark(MIN_N, MAX_N, 1, reduces, true); 
     //ReduceSum3Impl(MIN_N, true);

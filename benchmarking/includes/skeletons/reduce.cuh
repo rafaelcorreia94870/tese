@@ -64,22 +64,20 @@ T reduce_impl(const Collection &h_in, T identity, BinaryOp op, Args... args) {
 
     T *d_in, *d_out;
     cudaMalloc(&d_in, N * sizeof(T));
-    cudaMalloc(&d_out, N * sizeof(T));
 
     cudaStream_t stream;
     cudaStreamCreate(&stream);
 
     cudaMemcpyAsync(d_in, h_in.data(), N * sizeof(T), cudaMemcpyHostToDevice, stream);
 
-    reduce_kernel(stream, d_in, d_out, N, identity, op, args...);
+    reduce_kernel(stream, d_in, d_in, N, identity, op, args...);
 
     T result;
-    cudaMemcpyAsync(&result, d_out, sizeof(T), cudaMemcpyDeviceToHost, stream);
+    cudaMemcpyAsync(&result, d_in, sizeof(T), cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
 
     cudaStreamDestroy(stream);
     cudaFree(d_in);
-    cudaFree(d_out);
 
     return result;
 }

@@ -21,4 +21,13 @@ struct four_times_struct
     std::chrono::milliseconds new_time;
     std::chrono::milliseconds new_fast_time;
 };
+
+struct five_times_struct
+{
+    std::chrono::milliseconds v1;
+    std::chrono::milliseconds v2;
+    std::chrono::milliseconds v3;
+    std::chrono::milliseconds v4;
+    std::chrono::milliseconds thrust;
+};
 #endif

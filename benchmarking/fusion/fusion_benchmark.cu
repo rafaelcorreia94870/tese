@@ -10,7 +10,7 @@
 
 #include "../../experimental/includes/framework/rafa.cuh"
 
-std::chrono::duration<double> twointensivecomputations_old(size_t N, size_t loop_count) {
+std::chrono::duration<double> twointensivecomputations_old(size_t N, size_t loop_count, bool print = false) {
     auto start = std::chrono::high_resolution_clock::now();
     rafa::vector<float> vec(N, 1.0f);
     rafa::vector<float> result(N);
@@ -18,14 +18,18 @@ std::chrono::duration<double> twointensivecomputations_old(size_t N, size_t loop
     vec.smart_map(BenchmarkingComputations(loop_count)).smart_map(BenchmarkingComputations(loop_count), result).execute();
     
     auto end = std::chrono::high_resolution_clock::now();
+    
+    /* if (print) {
+        result.print();
+    } */
     vec.clear();
     result.clear();
-
-    //result.print();
     cudaDeviceReset();
 
 
-    //std::cout << result[0];
+    if (print) {
+        std::cout << result[0];
+    }   
     return end - start;
 
 }
@@ -64,7 +68,7 @@ std::chrono::duration<double> tensimplecomputations_old(size_t N) {
 }
 
 void two_intenvisve_benchmark(size_t N, size_t loop_count_1, size_t loop_count_2, size_t loop_count_3, size_t it) {
-    std::cout << "Iteration,Loop_Count,Expression Time (ns),GPU Vector Time (ns),Old Implementation Time (ns)\n";
+    std::cout << "Iteration,Loop_Count,Tuple Time (ns),Variadic Expressions Time (ns),Command Interface Time (ns)\n";
     for (int i = 0; i < it; i++) {
         auto expr = twointensivecomputations_expr(N, loop_count_1);
         auto gpu_vec = twointensivecomputations_gpu_vec(N, loop_count_1);
@@ -96,7 +100,7 @@ void two_intenvisve_benchmark(size_t N, size_t loop_count_1, size_t loop_count_2
 
 void ten_simple_computations_benchmark(size_t MIN_N, size_t MAX_N, size_t it) {
 
-    std::cout << "Iteration,N,Expression Time (ns),GPU Vector Time (ns),Old Implementation Time (ns)" << "\n";
+    std::cout << "Iteration,N,Tuple Time (ns),Variadic Expressions Time (ns),Command Interface Time (ns)" << "\n";
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         for(int i = 0; i < it; i++) {
             auto expr = tensimplecomputations_expr(N);
@@ -112,7 +116,7 @@ void ten_simple_computations_benchmark(size_t MIN_N, size_t MAX_N, size_t it) {
 }  
 
 void single_computation_benchmark(size_t MIN_N, size_t MAX_N, size_t it) {
-    std::cout << "Iteration,N,Expression Time (ns),GPU Vector Time (ns),Old Implementation Time (ns)" << "\n";
+    std::cout << "Iteration,N,Tuple Time (ns),Variadic Expressions Time (ns),Command Interface Time (ns)" << "\n";
     for (size_t N = MIN_N; N <= MAX_N; N *= 2) {
         
         for (size_t i = 0; i < it; i++) {
@@ -130,16 +134,22 @@ void single_computation_benchmark(size_t MIN_N, size_t MAX_N, size_t it) {
     
 
 int main() {
-    /* const size_t N = 50'000'000;
+    const size_t N = 50'000'000;
     const size_t loop_count_1 = 10;
     const size_t loop_count_2 = 100;
     const size_t loop_count_3 = 1000;
 
-    const size_t it = 20; */
+    const size_t it = 200; 
     
-    /* auto warmup_expr = twointensivecomputations_expr(N, 1);
-    auto warmup_gpu_vec = twointensivecomputations_gpu_vec(N, 1);
-    auto warmup_old = twointensivecomputations_old(N, 1);
+    auto warmup_expr = twointensivecomputations_expr(N, loop_count_3, true); //tuple implementation
+    twointensivecomputations_expr(N, loop_count_2, true);
+    twointensivecomputations_expr(N, loop_count_1, true);
+    std::cout << "---------------------";
+    auto warmup_gpu_vec = twointensivecomputations_gpu_vec(N, loop_count_3, true); //variadic expression implementation
+    twointensivecomputations_gpu_vec(N, loop_count_2, true);
+    twointensivecomputations_gpu_vec(N, loop_count_1, true);
+    //auto warmup_old = twointensivecomputations_old(N, 1, true); //Command interface implementation
+    auto warmup_old = warmup_expr; // Using the same warmup for old implementation as it is not used in the main function
 
     
 
@@ -147,10 +157,18 @@ int main() {
               << warmup_gpu_vec.count() << "s, "
               << warmup_old.count() << "s" << std::endl;
 
+    std::cout << "Test file at benchmarking results\n";
+    std::ofstream outFile0("../sheet/implementations/test.txt");
+
+    auto cout_buf0 = std::cout.rdbuf();
+    std::cout.rdbuf(outFile0.rdbuf());
+    std::cout << "test\n";
+    std::cout.rdbuf(cout_buf0);
+
               
               
     std::cout << "Starting benchmarking two intensive computations..." << std::endl;
-    std::ofstream outFile("../sheet/fusion_data_optimized_O2.csv");
+    std::ofstream outFile("../sheet/implementations/fusion_data_optimized_O2.csv");
     auto cout_buf = std::cout.rdbuf();
     std::cout.rdbuf(outFile.rdbuf());
     two_intenvisve_benchmark(N, loop_count_1, loop_count_2, loop_count_3, it);
@@ -158,7 +176,7 @@ int main() {
     std::cout.rdbuf(cout_buf);
     std::cout << "Benchmarking two intensive computations completed." << std::endl;
 
-    std::ofstream outFile2("..\\sheet\\fusion_data_optimized_O2_2.csv");
+    std::ofstream outFile2("..\\sheet\\implementations\\fusion_data_optimized_O2_2.csv");
     std::cout.rdbuf(outFile2.rdbuf());
     ten_simple_computations_benchmark(10'000, 50'000'000, it);
 
@@ -166,12 +184,12 @@ int main() {
     std::cout << "Benchmarking completed." << std::endl;
 
     std::cout << "Starting single computation benchmark...\n";
-    std::ofstream outFile3("../sheet/single_computation_benchmark_O2.csv");
+    std::ofstream outFile3("../sheet/implementations/single_computation_benchmark_O2.csv");
     auto cout_buf3 = std::cout.rdbuf();
     std::cout.rdbuf(outFile3.rdbuf());
     single_computation_benchmark(10'000, 50'000'000, it);
     std::cout.rdbuf(cout_buf3);
-    std::cout << "Single computation benchmark completed.\n"; */
+    std::cout << "Single computation benchmark completed.\n";
 
  /*    runAllTests(1000);
     std::cout << "All tests completed.\n";
@@ -181,10 +199,10 @@ int main() {
     std::cout << "Running tests with even larger size...\n";
     runAllTests(10'000'000);
     std::cout << "All tests completed with even larger size.\n"; */
-    std::cout << "Running tests with maximum size...\n";
+    /* std::cout << "Running tests with maximum size...\n";
     runAllTests(500'000'000);
     std::cout << "All tests completed with maximum size.\n";
-    std::cout << "All tests completed with larger size.\n";
+    std::cout << "All tests completed with larger size.\n"; */
     /* two_intenvisve_benchmark(N, loop_count_1, loop_count_2, loop_count_3, it);
     ten_simple_computations_benchmark(50'000'000, 50'000'000, it); */
                 

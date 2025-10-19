@@ -571,6 +571,69 @@ four_times_struct ReduceSumVersionComp(const size_t N, const bool enable_prints 
     return times;
 }
 
+five_times_struct ReduceSumComp(const size_t N, const bool enable_prints = true) {
+    five_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.v1 = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 0.0f, Sum());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_vector_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.v2 = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_vector_v2, 0.0f, Sum());
+        });
+    }
+    //v3 implementation
+    std::vector<float> input_vector_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.v3 = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_vector_v3, 0.0f, Sum());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.v4 = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 0.0f, Sum());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<float> thrust_reduce(N, 1);
+    std::vector<float> thrust_result_vector(1);
+    {
+        times.thrust = timeFunction([&]() {
+            thrust::device_vector<float> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0.0f, Sum());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.v1.count(), times.v2.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.v1.count(), times.v3.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.v1.count(), times.v4.count());
+        compareAndPrint("Original Reduce", old_result_vector, "Thrust Reduce", thrust_result_vector, "Reduce (Original vs Thrust)", times.v1.count(), times.thrust.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0] << "\n";
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << "\n";
+        std::cout << "Expected Result: " << std::accumulate(old_reduce.begin(), old_reduce.end(), 0.0f) << "\n";
+    }
+    return times;
+}
+
 two_times_struct ReduceMult(const size_t N, const bool enable_prints = true) {
     two_times_struct times;
 
@@ -710,6 +773,70 @@ four_times_struct ReduceMultVersionComp(const size_t N, const bool enable_prints
         std::cout << "Expected Result: " << std::accumulate(old_reduce.begin(), old_reduce.end(), 1.0f) << "\n";
     }
 
+    return times;
+}
+
+five_times_struct ReduceMultComp(const size_t N, const bool enable_prints = true) {
+    five_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.v1 = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 1.0f, Multiply());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_reduce_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.v2 = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_reduce_v2, 1.0f, Multiply());
+        });
+    }
+
+    //v3 implementation
+    std::vector<float> input_reduce_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.v3 = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_reduce_v3, 1.0f, Multiply());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.v4 = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 1.0f, Multiply());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<float> thrust_reduce(N, 1);
+    std::vector<float> thrust_result_vector(1);
+    {
+        times.thrust = timeFunction([&]() {
+            thrust::device_vector<float> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 1.0f, Multiply());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.v1.count(), times.v2.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.v1.count(), times.v3.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.v1.count(), times.v4.count());
+        compareAndPrint("Original Reduce", old_result_vector, "Thrust Reduce", thrust_result_vector, "Reduce (Original vs Thrust)", times.v1.count(), times.thrust.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0 ] << "\n";
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << "\n";
+        std::cout << "Expected Result: " << std::accumulate(old_reduce.begin(), old_reduce.end(), 1.0f, std::multiplies<float>()) << "\n";
+    }
     return times;
 }
 
@@ -881,6 +1008,70 @@ four_times_struct ReduceMaxVersionComp(const size_t N, const bool enable_prints 
 
     return times;
 
+}
+
+five_times_struct ReduceMaxComp(const size_t N, const bool enable_prints = true) {
+    five_times_struct times;
+
+    //og implementation
+    std::vector<float> old_reduce(N, 1);
+    std::vector<float> old_result_vector(1);
+    {
+        times.v1 = timeFunction([&]() {
+            old_result_vector[0] = reduce(old_reduce, 0.0f, Max());
+        });
+    }
+
+    //v2 implementation
+    std::vector<float> input_reduce_v2(N, 1);
+    std::vector<float> result_vector_v2(1);
+    {
+        times.v2 = timeFunction([&]() {
+            result_vector_v2[0] = reduce_v2(input_reduce_v2, 0.0f, Max());
+        });
+    }
+
+    //v3 implementation
+    std::vector<float> input_reduce_v3(N, 1);
+    std::vector<float> result_vector_v3(1);
+    {
+        times.v3 = timeFunction([&]() {
+            result_vector_v3[0] = reduce_v3(input_reduce_v3, 0.0f, Max());
+        });
+    }
+
+    //v4 implementation
+    std::vector<float> input_reduce_v4(N, 1);
+    std::vector<float> result_vector_v4(1);
+    {
+        times.v4 = timeFunction([&]() {
+            result_vector_v4[0] = reduce_v4(input_reduce_v4, 0.0f, Max());
+        });
+    }
+
+    // Thrust reduction
+    std::vector<float> thrust_reduce(N, 1);
+    std::vector<float> thrust_result_vector(1);
+    {
+        times.thrust = timeFunction([&]() {
+            thrust::device_vector<float> d_vec(thrust_reduce.begin(), thrust_reduce.end());
+            thrust_result_vector[0] = thrust::reduce(d_vec.begin(), d_vec.end(), 0.0f, Max());
+        });
+    }
+
+    if(enable_prints){
+        compareAndPrint("Original Reduce", old_result_vector, "v2 Reduce", result_vector_v2, "Reduce (Original vs v2)", times.v1.count(), times.v2.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v3 Reduce", result_vector_v3, "Reduce (Original vs v3)", times.v1.count(), times.v3.count());
+        compareAndPrint("Original Reduce", old_result_vector, "v4 Reduce", result_vector_v4, "Reduce (Original vs v4)", times.v1.count(), times.v4.count());
+        compareAndPrint("Original Reduce", old_result_vector, "Thrust Reduce", thrust_result_vector, "Reduce (Original vs Thrust)", times.v1.count(), times.thrust.count());
+        std::cout << "Original Reduce Result: " << old_result_vector[0] << "\n";
+        std::cout << "v2 Reduce Result: " << result_vector_v2[0] << "\n";
+        std::cout << "v3 Reduce Result: " << result_vector_v3[0] << "\n";
+        std::cout << "v4 Reduce Result: " << result_vector_v4[0 ] << "\n";
+        std::cout << "Thrust Reduce Result: " << thrust_result_vector[0] << "\n";
+        std::cout << "Expected Result: " << *std::max_element(old_reduce.begin(), old_reduce.end()) << "\n";
+    }
+    return times;
 }
 
 two_times_struct IntensiveComputationCompare(const size_t N, const bool enable_prints = true) {

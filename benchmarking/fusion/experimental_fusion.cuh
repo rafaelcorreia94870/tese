@@ -126,7 +126,7 @@ void launch_kernel(PipelineT pipeline, int N, Arrays... arrays) {
     cudaDeviceSynchronize();
 }
 
-std::chrono::duration<double> twointensivecomputations_expr(size_t n, size_t loop_count) {
+std::chrono::duration<double> twointensivecomputations_expr(size_t n, size_t loop_count, bool print = false) {
     cudaStream_t stream;
     cudaStreamCreate(&stream);
     auto start = std::chrono::high_resolution_clock::now();
@@ -143,7 +143,10 @@ std::chrono::duration<double> twointensivecomputations_expr(size_t n, size_t loo
     cudaMemcpyAsync(result.data(), d_result, n * sizeof(float), cudaMemcpyDeviceToHost, stream);
     cudaStreamSynchronize(stream);
     auto end = std::chrono::high_resolution_clock::now();
-    //std::cout << "Result[0]: " << result[0] << std::endl;
+
+    if(print) {
+        std::cout << "Result[0]: " << result[0] << std::endl;
+    }
     cudaFree(d_vec1);
     cudaFree(d_result);
     cudaStreamDestroy(stream);
